@@ -5,14 +5,14 @@
 //  Created by luke on 2025/11/23.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct LifeCultivationApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            DailyRecord.self, AppSettings.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
