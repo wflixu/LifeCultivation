@@ -9,7 +9,8 @@
       "Bash(xcrun simctl boot:*)",
       "Bash(xcrun simctl install:*)",
       "Bash(open:*)",
-      "Bash(xcrun:*)"
+      "Bash(xcrun:*)",
+      "Bash(swift:*)"
     ],
     "deny": [],
     "ask": []

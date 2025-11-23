@@ -13,13 +13,15 @@ import Charts
 struct HistoryView: View {
     @Query(sort: \DailyRecord.date, order: .reverse) private var records: [DailyRecord]
     @State private var selectedTimeRange: TimeRange = .week
+    @State private var showingAddRecord = false
+    @State private var editingDate: Date = Date()
     
     enum TimeRange: String, CaseIterable {
-        case week = "最近一周"
-        case month = "最近一月"
-        case quarter = "最近一季"
-        case halfYear = "最近半年"
-        case year = "最近一年"
+        case week = "近一周"
+        case month = "近一月"
+        case quarter = "近一季"
+        case halfYear = "近半年"
+        case year = "近一年"
         
         var dateRange: Date {
             let calendar = Calendar.current
@@ -61,19 +63,47 @@ struct HistoryView: View {
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
-                    
+
                     // 平均分卡片
                     AverageScoreCard(averageScore: averageScore, recordCount: filteredRecords.count)
-                    
+
                     // 趋势图表
                     ScoreChartView(records: filteredRecords)
-                    
+
                     // 详细记录列表
-                    RecordListView(records: Array(filteredRecords.prefix(30)))
+                    RecordListView(
+                        records: Array(filteredRecords.prefix(30)),
+                        onEdit: { date in
+                            editingDate = date
+                            showingAddRecord = true
+                        }
+                    )
+
+                    // 添加历史记录按钮（较小）
+                    Button(action: {
+                        showingAddRecord = true
+                        editingDate = Date() // 默认今天
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus.circle")
+                            Text("补记录")
+                            Image(systemName: "calendar.badge.plus")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(20)
+                    }
+                    .padding(.horizontal)
                 }
                 .padding()
             }
             .navigationTitle("修行历程")
+            .sheet(isPresented: $showingAddRecord) {
+                HistoryEditView(date: editingDate)
+            }
         }
     }
 }
@@ -136,7 +166,7 @@ struct ScoreChartView: View {
                 }
             }
             .frame(height: 200)
-            .chartYScale(domain: 0...10)
+            .chartYScale(domain: 0...12)
             .padding()
         }
         .background(Color(.systemBackground))
@@ -147,6 +177,7 @@ struct ScoreChartView: View {
 
 struct RecordListView: View {
     let records: [DailyRecord]
+    let onEdit: (Date) -> Void
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -156,7 +187,7 @@ struct RecordListView: View {
             
             LazyVStack(spacing: 12) {
                 ForEach(records) { record in
-                    RecordRowView(record: record)
+                    RecordRowView(record: record, onEdit: onEdit)
                 }
             }
             .padding()
@@ -169,6 +200,7 @@ struct RecordListView: View {
 
 struct RecordRowView: View {
     let record: DailyRecord
+    let onEdit: (Date) -> Void
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -185,9 +217,9 @@ struct RecordRowView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             HStack(spacing: 8) {
                 Text("\(record.dietScore)")
                     .font(.system(size: 14, weight: .medium))
@@ -198,11 +230,22 @@ struct RecordRowView: View {
                 Text("\(record.screenTimeScore)")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.purple)
-                
+                Text("\(record.exerciseCount)")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.mint)
+
                 Text("\(record.totalScore)")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.orange)
                     .frame(width: 30, alignment: .trailing)
+            }
+
+            Button(action: {
+                onEdit(record.date)
+            }) {
+                Image(systemName: "pencil.circle")
+                    .font(.title2)
+                    .foregroundColor(.blue)
             }
         }
         .padding(.vertical, 4)
