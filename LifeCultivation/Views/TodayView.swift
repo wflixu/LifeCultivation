@@ -23,6 +23,7 @@ struct TodayView: View {
     @State private var wakeOnTime = true
     
     @State private var screenTime: Double = 0
+    @State private var exerciseCount = 0
     @State private var exerciseDone = false
     @State private var note = ""
     
@@ -48,7 +49,7 @@ struct TodayView: View {
     }
     
     private var totalScore: Int {
-        dietScore + sleepScore + screenTimeScore
+        dietScore + sleepScore + screenTimeScore + exerciseCount
     }
     
     var body: some View {
@@ -59,7 +60,8 @@ struct TodayView: View {
                     ScoreCardView(totalScore: totalScore,
                                 dietScore: dietScore,
                                 sleepScore: sleepScore,
-                                screenScore: screenTimeScore)
+                                screenScore: screenTimeScore,
+                                exerciseScore: exerciseCount)
                     
                     // 饮食评分
                     DietSectionView(
@@ -85,7 +87,7 @@ struct TodayView: View {
                     )
                     
                     // 锻炼
-                    ExerciseSectionView(exerciseDone: $exerciseDone)
+                    ExerciseSectionView(exerciseCount: $exerciseCount, exerciseDone: $exerciseDone)
                     
                     // 备注
                     NoteSectionView(note: $note)
@@ -101,9 +103,12 @@ struct TodayView: View {
     }
     
     private func loadTodayRecord() {
-        let today = Calendar.current.startOfDay(for: Date())
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+
         let predicate = #Predicate<DailyRecord> { record in
-            Calendar.current.isDate(record.date, inSameDayAs: today)
+            record.date >= today && record.date < tomorrow
         }
         
         let descriptor = FetchDescriptor<DailyRecord>(predicate: predicate)
@@ -128,16 +133,18 @@ struct TodayView: View {
         dietNoJunk = record.dietScore >= 3
         // 其他字段类似...
         screenTime = Double(record.screenTimeScore == 4 ? 0 : (record.screenTimeScore == 2 ? 45 : 90))
+        exerciseCount = record.exerciseCount
         exerciseDone = record.exerciseCompleted
         note = record.note ?? ""
     }
     
     private func saveRecord() {
         let record = todayRecord ?? DailyRecord()
-        
+
         record.dietScore = dietScore
         record.sleepScore = sleepScore
         record.screenTimeScore = screenTimeScore
+        record.exerciseCount = exerciseCount
         record.exerciseCompleted = exerciseDone
         record.note = note.isEmpty ? nil : note
         
