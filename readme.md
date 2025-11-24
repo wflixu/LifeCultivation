@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![LifeCultivation Logo](Assets.xcassets/AppIcon.appiconset/AppIcon.png)
+![LifeCultivation Logo](LifeCultivation/Assets.xcassets/AppIcon.appiconset/AppIcon.png)
 
 **一款专注于健康生活方式培养的iOS原生应用**
 
@@ -134,7 +134,7 @@ final class DailyRecord {
 
 2. **克隆项目**
    ```bash
-   git clone https://github.com/your-username/LifeCultivation.git
+   git clone https://github.com/wflixu/LifeCultivation.git
    cd LifeCultivation
    ```
 
@@ -248,9 +248,9 @@ xcodebuild test -scheme LifeCultivation -destination 'platform=iOS Simulator,nam
 
 ## 项目信息
 
-- **作者**: [Your Name](https://github.com/your-username)
+- **作者**: [Your Name](https://github.com/w f li xu)
 - **邮箱**: your.email@example.com
-- **项目地址**: [https://github.com/your-username/LifeCultivation](https://github.com/your-username/LifeCultivation)
+- **项目地址**: [https://github.com/wflixu/LifeCultivation](https://github.com/wflixu/LifeCultivation)
 
 ## 致谢
 
@@ -264,7 +264,7 @@ xcodebuild test -scheme LifeCultivation -destination 'platform=iOS Simulator,nam
 
 感谢所有给这个项目点Star的开发者！
 
-[![Star History Chart](https://api.star-history.com/svg?repos=your-username/LifeCultivation&type=Date)](https://star-history.com/#your-username/LifeCultivation&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=wflixu/LifeCultivation&type=Date)](https://star-history.com/#wflixu/LifeCultivation&Date)
 
 ---
 
