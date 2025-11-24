@@ -1,8 +1,8 @@
 # LifeCultivation (人生修行)
 
 <div align="center">
+ <img src="./LifeCultivation/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="今日评分页面" width="250">
 
-![LifeCultivation Logo](LifeCultivation/Assets.xcassets/AppIcon.appiconset/AppIcon.png)
 
 **一款专注于健康生活方式培养的iOS原生应用**
 
@@ -178,9 +178,9 @@ xcodebuild test -scheme LifeCultivation -destination 'platform=iOS Simulator,nam
 ## 应用截图
 
 <div align="center">
-    <img src="Screenshots/TodayView.png" alt="今日评分页面" width="250">
-    <img src="Screenshots/HistoryView.png" alt="历史记录页面" width="250">
-    <img src="Screenshots/ChartsView.png" alt="数据图表页面" width="250">
+    <img src="./images/TodayView.png" alt="今日评分页面" width="250">
+    <img src="./images/HistoryView.png" alt="历史记录页面" width="250">
+    <img src="./images/Settings.png" alt="设置页面" width="250">
 </div>
 
 ## 开发路线图
@@ -248,7 +248,7 @@ xcodebuild test -scheme LifeCultivation -destination 'platform=iOS Simulator,nam
 
 ## 项目信息
 
-- **作者**: [Your Name](https://github.com/w f li xu)
+- **作者**: [wflixu](https://github.com/wflixu)
 - **邮箱**: your.email@example.com
 - **项目地址**: [https://github.com/wflixu/LifeCultivation](https://github.com/wflixu/LifeCultivation)
 
