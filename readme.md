@@ -1,7 +1,7 @@
 # LifeCultivation (人生修行)
 
 <div align="center">
- <img src="./LifeCultivation/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="今日评分页面" width="250">
+ <img src="LifeCultivation/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="今日评分页面" width="250">
 
 
 **一款专注于健康生活方式培养的iOS原生应用**
@@ -178,9 +178,9 @@ xcodebuild test -scheme LifeCultivation -destination 'platform=iOS Simulator,nam
 ## 应用截图
 
 <div align="center">
-    <img src="./images/TodayView.png" alt="今日评分页面" width="250">
-    <img src="./images/HistoryView.png" alt="历史记录页面" width="250">
-    <img src="./images/Settings.png" alt="设置页面" width="250">
+    <img src="images/TodayView.png" alt="今日评分页面" width="250">
+    <img src="images/HistoryView.png" alt="历史记录页面" width="250">
+    <img src="images/Settings.png" alt="设置页面" width="250">
 </div>
 
 ## 开发路线图
