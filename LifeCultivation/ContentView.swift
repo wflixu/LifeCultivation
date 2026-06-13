@@ -1,39 +1,63 @@
-//
-//  ContentView.swift
-//  LifeCultivation
-//
-//  Created by luke on 2025/11/23.
-//
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
+    @Bindable var diaryVM: DiaryViewModel
+    @Bindable var nutritionCardsVM: NutritionCardsViewModel
+    @Bindable var waterCardVM: WaterCardViewModel
+    @Bindable var exerciseCardVM: ExerciseCardViewModel
+    @Bindable var addFoodVM: AddFoodViewModel
+    @Bindable var recipeVM: RecipeViewModel
+    @Bindable var profileVM: ProfileViewModel
+
     @State private var selectedTab = 0
-    @Environment(\.modelContext) private var modelContext
-    
+
     var body: some View {
         TabView(selection: $selectedTab) {
-            TodayView()
-                .tabItem {
-                    Image(systemName: "sun.max.fill")
-                    Text("今日")
-                }
-                .tag(0)
-            
-            HistoryView()
-                .tabItem {
-                    Image(systemName: "chart.line.uptrend.xyaxis")
-                    Text("历史")
-                }
-                .tag(1)
-            
-            SettingsView()
-                .tabItem {
-                    Image(systemName: "gearshape.fill")
-                    Text("设置")
-                }
-                .tag(2)
+            NavigationStack {
+                DiaryView(
+                    diaryVM: diaryVM,
+                    nutritionCardsVM: nutritionCardsVM,
+                    waterCardVM: waterCardVM,
+                    exerciseCardVM: exerciseCardVM,
+                    addFoodVM: addFoodVM
+                )
+                .navigationTitle("日记")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+            .tabItem {
+                Label("日记", systemImage: "book.pages.fill")
+            }
+            .tag(0)
+
+            NavigationStack {
+                RecipeView(vm: recipeVM)
+                    .navigationTitle("食谱")
+                    .navigationBarTitleDisplayMode(.inline)
+            }
+            .tabItem {
+                Label("食谱", systemImage: "fork.knife")
+            }
+            .tag(1)
+
+            NavigationStack {
+                ProfileView(vm: profileVM)
+                    .navigationTitle("个人资料")
+                    .navigationBarTitleDisplayMode(.inline)
+            }
+            .tabItem {
+                Label("个人资料", systemImage: "person.crop.circle.fill")
+            }
+            .tag(2)
         }
-        .accentColor(.orange)
+        .tint(.orange)
+        .onChange(of: nutritionCardsVM.showAddFood) { _, show in
+            if show {
+                addFoodVM.targetMealType = nutritionCardsVM.selectedMealType
+                addFoodVM.targetDate = diaryVM.currentDate
+            }
+        }
+        .sheet(isPresented: $nutritionCardsVM.showAddFood) {
+            AddFoodView(vm: addFoodVM)
+        }
     }
 }
