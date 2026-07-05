@@ -39,19 +39,39 @@ struct LifeCultivationApp: App {
         healthKitService = hk
 
         let profile = UserProfile.fetchOrCreate(context: container.mainContext)
-        let apiKey = profile.apiKey ?? ""
-        let baseURL = profile.apiBaseURL
-        nutritionService = AINutritionService(apiKey: apiKey, baseURL: baseURL)
+        let apiKey = profile.apiKey?.isEmpty == false ? profile.apiKey! : Self.defaultAPIKey
+        let baseURL = profile.apiBaseURL?.isEmpty == false ? profile.apiBaseURL! : Self.defaultBaseURL
+        nutritionService = AINutritionService(apiKey: apiKey, baseURL: baseURL, model: Self.defaultModel)
 
         _diaryVM = State(initialValue: DiaryViewModel(modelContainer: container, healthKitService: hk))
         _nutritionCardsVM = State(initialValue: NutritionCardsViewModel(modelContainer: container))
         _waterCardVM = State(initialValue: WaterCardViewModel(modelContainer: container))
-        _exerciseCardVM = State(initialValue: ExerciseCardViewModel(modelContainer: container, healthKitService: hk))
+        _exerciseCardVM = State(initialValue: ExerciseCardViewModel(modelContainer: container, healthKitService: hk, nutritionService: nutritionService))
         _addFoodVM = State(initialValue: AddFoodViewModel(modelContainer: container, nutritionService: nutritionService))
         _recipeVM = State(initialValue: RecipeViewModel(modelContainer: container, nutritionService: nutritionService))
         _profileVM = State(initialValue: ProfileViewModel(modelContainer: container, healthKitService: hk))
         _onboardingVM = State(initialValue: OnboardingViewModel(modelContainer: container, healthKitService: hk))
     }
+
+    // MARK: - Development Defaults (from gitignored JSON config)
+
+    #if DEBUG
+    private static var defaultAPIKey: String { devConfig?["apiKey"] as? String ?? "" }
+    private static var defaultBaseURL: String { devConfig?["baseURL"] as? String ?? "" }
+    private static var defaultModel: String { devConfig?["model"] as? String ?? "claude-sonnet-4-6" }
+
+    private static let devConfig: NSDictionary? = {
+        guard let url = Bundle.main.url(forResource: "dev-config", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let json = try? JSONSerialization.jsonObject(with: data) as? NSDictionary
+        else { return nil }
+        return json
+    }()
+    #else
+    private static let defaultAPIKey = ""
+    private static let defaultBaseURL = ""
+    private static let defaultModel = "claude-sonnet-4-6"
+    #endif
 
     @AppStorage("onboardingCompleted") private var onboardingCompleted = false
 

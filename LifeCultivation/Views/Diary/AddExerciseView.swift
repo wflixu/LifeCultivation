@@ -8,7 +8,12 @@ struct AddExerciseView: View {
     @State private var selectedType: ExerciseType = .running
     @State private var duration: TimeInterval = 30 * 60
     @State private var distance: Double?
-    @State private var weight: Double = 70
+    @State private var calorieSource: CalorieSource = .met
+    @State private var manualCalories: Double = 0
+    @State private var intensity: String = ""
+    @State private var aiEstimatedCalories: Double?
+    @State private var isAIEstimating = false
+    @State private var aiError: String?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -24,9 +29,31 @@ struct AddExerciseView: View {
     var estimatedCalories: Double {
         CalorieCalculator.exerciseCalories(
             met: selectedType.met,
-            weightKg: weight,
+            weightKg: vm.userWeight,
             minutes: duration / 60
         )
+    }
+
+    var effectiveCalories: Double {
+        switch calorieSource {
+        case .met:
+            return estimatedCalories
+        case .manual:
+            return manualCalories
+        case .ai:
+            return aiEstimatedCalories ?? estimatedCalories
+        }
+    }
+
+    var canSubmit: Bool {
+        switch calorieSource {
+        case .met:
+            return true
+        case .manual:
+            return manualCalories > 0
+        case .ai:
+            return true
+        }
     }
 
     var body: some View {
@@ -37,8 +64,8 @@ struct AddExerciseView: View {
                 if distanceBased {
                     distanceSection
                 }
-                weightSection
-                calorieSection
+                calorieSourceSection
+                calorieDetailSection
             }
             .navigationTitle("添加运动")
             .navigationBarTitleDisplayMode(.inline)
@@ -48,15 +75,9 @@ struct AddExerciseView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("添加") {
-                        vm.addManualExercise(
-                            selectedType,
-                            duration: duration,
-                            distance: distanceBased ? distance : nil,
-                            weight: weight,
-                            to: date
-                        )
-                        dismiss()
+                        submit()
                     }
+                    .disabled(!canSubmit)
                 }
             }
             .toolbar {
@@ -68,7 +89,7 @@ struct AddExerciseView: View {
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Type Section
 
     private var typeSection: some View {
         Section("运动类型") {
@@ -87,7 +108,7 @@ struct AddExerciseView: View {
                         .padding(.vertical, 10)
                         .background(
                             selectedType == type
-                                ? Color.orange.opacity(0.15)
+                                ? AppColors.primaryLight
                                 : Color(.systemGray6),
                             in: RoundedRectangle(cornerRadius: 10)
                         )
@@ -97,6 +118,8 @@ struct AddExerciseView: View {
             }
         }
     }
+
+    // MARK: - Duration Section
 
     private var durationSection: some View {
         Section("时长") {
@@ -109,6 +132,8 @@ struct AddExerciseView: View {
         }
     }
 
+    // MARK: - Distance Section
+
     private var distanceSection: some View {
         Section("距离 (公里)") {
             TextField("距离", value: $distance, format: .number)
@@ -116,21 +141,124 @@ struct AddExerciseView: View {
         }
     }
 
-    private var weightSection: some View {
-        Section("体重 (公斤)") {
-            TextField("体重", value: $weight, format: .number)
-                .keyboardType(.decimalPad)
+    // MARK: - Calorie Source Section
+
+    private var calorieSourceSection: some View {
+        Section("卡路里计算方式") {
+            Picker("方式", selection: $calorieSource) {
+                ForEach(CalorieSource.allCases, id: \.self) { source in
+                    Text(source.rawValue).tag(source)
+                }
+            }
+            .pickerStyle(.segmented)
         }
     }
 
-    private var calorieSection: some View {
-        Section {
-            HStack {
-                Text("估算消耗")
-                Spacer()
-                Text("\(Int(estimatedCalories)) kcal")
-                    .foregroundStyle(.orange)
-                    .fontWeight(.medium)
+    // MARK: - Calorie Detail Section
+
+    @ViewBuilder
+    private var calorieDetailSection: some View {
+        switch calorieSource {
+        case .met:
+            Section {
+                HStack {
+                    Text("估算消耗")
+                    Spacer()
+                    Text("\(Int(estimatedCalories)) kcal")
+                        .foregroundStyle(AppColors.primary)
+                        .fontWeight(.medium)
+                }
+            } footer: {
+                Text("基于 MET \(String(format: "%.1f", selectedType.met)) × 体重 \(String(format: "%.0f", vm.userWeight)) kg 计算")
+            }
+
+        case .manual:
+            Section("卡路里") {
+                TextField("输入卡路里", value: $manualCalories, format: .number)
+                    .keyboardType(.numberPad)
+            }
+
+        case .ai:
+            Section {
+                TextField("强度描述 (如: 中等强度，出了很多汗)", text: $intensity, axis: .vertical)
+                    .lineLimit(2...4)
+
+                Button {
+                    estimateWithAI()
+                } label: {
+                    HStack {
+                        Spacer()
+                        if isAIEstimating {
+                            ProgressView()
+                        } else {
+                            Label("AI 智能估算", systemImage: "sparkles")
+                        }
+                        Spacer()
+                    }
+                }
+                .disabled(intensity.trimmingCharacters(in: .whitespaces).isEmpty || isAIEstimating)
+
+                if let aiEstimatedCalories {
+                    HStack {
+                        Text("AI 估算结果")
+                        Spacer()
+                        Text("\(Int(aiEstimatedCalories)) kcal")
+                            .foregroundStyle(.purple)
+                            .fontWeight(.medium)
+                    }
+                }
+
+                if let aiError {
+                    Text(aiError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            } header: {
+                Text("AI 估算")
+            } footer: {
+                Text("AI 将根据运动类型、时长和强度描述估算消耗热量")
+            }
+        }
+    }
+
+    // MARK: - Submit
+
+    private func submit() {
+        vm.addManualExercise(
+            selectedType,
+            duration: duration,
+            distance: distanceBased ? distance : nil,
+            weight: nil,
+            to: date,
+            calorieSource: calorieSource,
+            manualCalories: calorieSource == .manual ? manualCalories : nil,
+            intensity: calorieSource == .ai ? intensity : nil
+        )
+        dismiss()
+    }
+
+    // MARK: - AI Estimation
+
+    private func estimateWithAI() {
+        guard !intensity.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        isAIEstimating = true
+        aiError = nil
+
+        let type = selectedType
+        let dur = duration
+        let desc = intensity
+
+        Task {
+            defer { isAIEstimating = false }
+            do {
+                let result = try await vm.estimateExerciseCalories(
+                    type: type,
+                    duration: dur,
+                    intensity: desc
+                )
+                aiEstimatedCalories = result
+            } catch {
+                aiError = "估算失败: \(error.localizedDescription)"
             }
         }
     }
@@ -148,7 +276,6 @@ struct AddExerciseView: View {
         case .swimming: "figure.pool.swim"
         case .walking: "figure.walk"
         case .strength: "dumbbell"
-        case .yoga: "figure.mind.and.body"
         case .aerobics: "figure.mixed.cardio"
         case .ballGames: "figure.soccer"
         case .other: "figure.mixed.cardio"

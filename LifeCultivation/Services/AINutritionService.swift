@@ -19,11 +19,19 @@ struct NutritionSuggestion: Codable, Sendable {
     let reasoning: String
 }
 
+// MARK: - DTOs
+
+struct ExerciseCalorieEstimation: Codable, Sendable {
+    let calories: Double
+    let reasoning: String
+}
+
 // MARK: - Protocol
 
 protocol NutritionServiceProtocol: Sendable {
     func recognizeFood(description: String, imageData: Data?) async throws -> [RecognizedFood]
     func suggestNutrition(foodName: String, serving: String) async throws -> [NutritionSuggestion]
+    func estimateExerciseCalories(description: String) async throws -> Double
 }
 
 // MARK: - Implementation
@@ -115,6 +123,85 @@ final class AINutritionService: NutritionServiceProtocol {
         return wrapper.suggestions
     }
 
+    func estimateExerciseCalories(description: String) async throws -> Double {
+        let systemPrompt = """
+        你是一个专业的运动生理学家，擅长估算各类运动的能量消耗。
+
+        规则：
+        1. 根据用户提供的运动类型、时长和强度描述，估算消耗的卡路里(kcal)
+        2. 参考标准 MET 值，但要根据用户描述的强度进行调整：
+           - 低强度/轻松 ≈ MET * 0.7-0.8
+           - 中等强度/正常 ≈ MET * 1.0
+           - 高强度/剧烈/出了很多汗 ≈ MET * 1.2-1.5
+        3. 常见运动 MET 参考值：
+           - 跑步: 7-12 (慢跑~7, 中速~9, 快跑~12)
+           - 骑行: 4-10 (休闲~4, 中速~7, 快速~10)
+           - 游泳: 5-10
+           - 步行: 2-4
+           - 力量训练: 4-6
+           - 有氧体操: 5-8
+           - 球类运动: 5-10
+        4. 以一个 70kg 的成年人为基准估算
+        5. 严格返回以下 JSON 格式，不要包含任何其他文字：
+        {
+          "calories": 0,
+          "reasoning": "估算依据简述"
+        }
+        """
+
+        let requestBody: [String: Any] = [
+            "model": model,
+            "max_tokens": 256,
+            "stream": false,
+            "system": systemPrompt,
+            "messages": [
+                ["role": "user", "content": "请估算以下运动的卡路里消耗：\(description)"]
+            ]
+        ]
+
+        let data = try await makeRequest(body: requestBody)
+        let response = try decoder.decode(ExerciseEstimationResponse.self, from: data)
+        let textBlock = response.content.first { $0.type == "text" && $0.text != nil }
+        guard let text = textBlock?.text else {
+            throw NutritionError.invalidResponse
+        }
+        return try parseExerciseJSON(text)
+    }
+
+    private func parseExerciseJSON(_ text: String) throws -> Double {
+        if let data = text.data(using: .utf8),
+           let estimation = try? decoder.decode(ExerciseCalorieEstimation.self, from: data) {
+            guard estimation.calories > 0, estimation.calories < 5000 else {
+                throw NutritionError.invalidResponse
+            }
+            return estimation.calories
+        }
+
+        // Fallback: extract JSON from markdown code blocks
+        if let match = text.range(of: "```(?:json)?\\s*\\n?([\\s\\S]*?)```", options: .regularExpression) {
+            let jsonStr = String(text[match]).replacingOccurrences(of: "```json", with: "")
+                .replacingOccurrences(of: "```", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if let data = jsonStr.data(using: .utf8),
+               let estimation = try? decoder.decode(ExerciseCalorieEstimation.self, from: data),
+               estimation.calories > 0, estimation.calories < 5000 {
+                return estimation.calories
+            }
+        }
+
+        // Try to find JSON-like content
+        if let braceRange = text.range(of: "\\{[\\s\\S]*\"calories\"[\\s\\S]*\\}", options: .regularExpression) {
+            let jsonStr = String(text[braceRange])
+            if let data = jsonStr.data(using: .utf8),
+               let estimation = try? decoder.decode(ExerciseCalorieEstimation.self, from: data),
+               estimation.calories > 0, estimation.calories < 5000 {
+                return estimation.calories
+            }
+        }
+
+        throw NutritionError.invalidResponse
+    }
+
     // MARK: - Private
 
     private func makeRequest(body: [String: Any]) async throws -> Data {
@@ -169,12 +256,15 @@ final class AINutritionService: NutritionServiceProtocol {
 
     func validate(_ foods: [RecognizedFood]) -> [RecognizedFood] {
         foods.filter { food in
-            food.calories > 0 &&
-            food.calories < 3000 &&
-            (food.protein ?? 0) >= 0 &&
-            (food.fat ?? 0) >= 0 &&
-            (food.carbs ?? 0) >= 0 &&
-            !food.name.trimmingCharacters(in: .whitespaces).isEmpty
+            let macroCals = (food.protein ?? 0) * 4 + (food.fat ?? 0) * 9 + (food.carbs ?? 0) * 4
+            let discrepancy = macroCals > 0 ? abs(food.calories - macroCals) / max(macroCals, food.calories) : 0
+            return food.calories > 0 &&
+                food.calories < 3000 &&
+                (food.protein ?? 0) >= 0 &&
+                (food.fat ?? 0) >= 0 &&
+                (food.carbs ?? 0) >= 0 &&
+                !food.name.trimmingCharacters(in: .whitespaces).isEmpty &&
+                (macroCals == 0 || discrepancy < 0.5) // macros vs calories discrepancy < 50%
         }
     }
 }
@@ -200,6 +290,10 @@ private struct SuggestionResponse: Codable {
 
 private struct SuggestionWrapper: Codable {
     let suggestions: [NutritionSuggestion]
+}
+
+private struct ExerciseEstimationResponse: Codable {
+    let content: [ContentBlock]
 }
 
 // MARK: - Error

@@ -180,7 +180,7 @@ final class HealthKitService: HealthKitServiceProtocol {
         case .swimming: .swimming
         case .walking: .walking
         case .traditionalStrengthTraining, .functionalStrengthTraining: .strength
-        case .yoga: .yoga
+        case .yoga, .mindAndBody: .other
         case .soccer, .basketball, .tennis, .baseball, .volleyball: .ballGames
         default: .other
         }

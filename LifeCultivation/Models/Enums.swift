@@ -27,7 +27,6 @@ enum ExerciseType: String, Codable, CaseIterable {
     case swimming = "游泳"
     case walking = "步行"
     case strength = "力量训练"
-    case yoga = "瑜伽"
     case aerobics = "有氧体操"
     case ballGames = "球类运动"
     case other = "其他"
@@ -39,7 +38,6 @@ enum ExerciseType: String, Codable, CaseIterable {
         case .swimming: 7.0
         case .walking: 3.5
         case .strength: 5.0
-        case .yoga: 3.0
         case .aerobics: 6.0
         case .ballGames: 7.0
         case .other: 4.0
@@ -50,6 +48,12 @@ enum ExerciseType: String, Codable, CaseIterable {
 enum ExerciseSource: String, Codable {
     case healthKit
     case manual
+}
+
+enum CalorieSource: String, Codable, CaseIterable {
+    case met = "MET 估算"
+    case manual = "手动输入"
+    case ai = "AI 估算"
 }
 
 enum ActivityLevel: String, Codable, CaseIterable {
@@ -66,6 +70,11 @@ enum ActivityLevel: String, Codable, CaseIterable {
         case .active: 1.725
         }
     }
+}
+
+enum Gender: String, Codable, CaseIterable {
+    case male = "男"
+    case female = "女"
 }
 
 enum ViewState<T> {

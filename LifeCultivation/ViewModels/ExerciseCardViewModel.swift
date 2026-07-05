@@ -7,6 +7,7 @@ import SwiftUI
 final class ExerciseCardViewModel {
     private let modelContainer: ModelContainer
     private let healthKitService: HealthKitServiceProtocol
+    private let nutritionService: NutritionServiceProtocol
     var context: ModelContext { modelContainer.mainContext }
 
     var stepCount: Int = 0
@@ -14,16 +15,22 @@ final class ExerciseCardViewModel {
     var exercises: [ExerciseEntry] = []
     var showAddExercise = false
     var editingExercise: ExerciseEntry?
+    var userWeight: Double = 70  // default fallback, populated from record/profile
 
-    init(modelContainer: ModelContainer, healthKitService: HealthKitServiceProtocol) {
+    init(modelContainer: ModelContainer, healthKitService: HealthKitServiceProtocol, nutritionService: NutritionServiceProtocol) {
         self.modelContainer = modelContainer
         self.healthKitService = healthKitService
+        self.nutritionService = nutritionService
     }
 
     func load(from record: DailyRecord, profile: UserProfile?) {
         stepCount = record.stepCount
         stepGoal = profile?.stepGoal ?? 10000
         exercises = record.exercises ?? []
+        // Read weight: record.weight first, fallback to 70
+        if let w = record.weight, w > 0 {
+            userWeight = w
+        }
     }
 
     func fetchStepsAndWorkouts(for date: Date) async {
@@ -43,31 +50,46 @@ final class ExerciseCardViewModel {
         duration: TimeInterval,
         distance: Double?,
         weight: Double?,
-        to date: Date
+        to date: Date,
+        calorieSource: CalorieSource = .met,
+        manualCalories: Double? = nil,
+        intensity: String? = nil
     ) {
-        let met = type.met
-        let wt = weight ?? 70.0
-        let calories = CalorieCalculator.exerciseCalories(met: met, weightKg: wt, minutes: duration / 60)
+        let calories: Double
+        switch calorieSource {
+        case .manual:
+            calories = manualCalories ?? 0
+        case .ai, .met:
+            let met = type.met
+            let wt = weight ?? userWeight
+            calories = CalorieCalculator.exerciseCalories(met: met, weightKg: wt, minutes: duration / 60)
+        }
 
         let entry = ExerciseEntry(
             exerciseType: type,
             duration: duration,
             calories: calories,
             distance: distance,
-            source: .manual
+            source: .manual,
+            calorieSource: calorieSource,
+            intensity: intensity
         )
         let record = fetchOrCreateRecord(for: date)
         entry.dailyRecord = record
         context.insert(entry)
         try? context.save()
 
-        if record.activeEnergy == nil {
-            record.activeEnergy = 0
-        }
-        record.activeEnergy! += calories
-        try? context.save()
-
         exercises = record.exercises ?? []
+    }
+
+    func estimateExerciseCalories(
+        type: ExerciseType,
+        duration: TimeInterval,
+        intensity: String
+    ) async throws -> Double {
+        let minutes = duration / 60
+        let description = "\(type.rawValue)，\(Int(minutes))分钟，强度：\(intensity)"
+        return try await nutritionService.estimateExerciseCalories(description: description)
     }
 
     func deleteExercise(_ entry: ExerciseEntry) {
