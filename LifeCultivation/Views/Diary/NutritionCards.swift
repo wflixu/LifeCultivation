@@ -1,44 +1,115 @@
+import SwiftData
 import SwiftUI
 
 struct NutritionCards: View {
-    let record: DailyRecord
+    let date: Date
     let vm: NutritionCardsViewModel
     let addFoodVM: AddFoodViewModel
-    let date: Date
 
-    private let mealColors: [MealType: Color] = [
-        .breakfast: Color(red: 1.0, green: 0.84, blue: 0.04),
-        .lunch: Color.orange,
-        .dinner: Color(red: 0.69, green: 0.32, blue: 0.87),
-        .snack: Color(white: 0.56)
-    ]
+    @Query private var todayFoods: [FoodEntry]
+
+    init(date: Date, vm: NutritionCardsViewModel, addFoodVM: AddFoodViewModel) {
+        self.date = date
+        self.vm = vm
+        self.addFoodVM = addFoodVM
+        print("[NutritionCards] init with date=\(date)")
+        _todayFoods = Query(sort: \FoodEntry.timestamp)
+    }
+
+    private var foodsForDate: [FoodEntry] {
+        let dayStart = Calendar.current.startOfDay(for: date)
+        let dayEnd = Calendar.current.date(byAdding: .day, value: 1, to: dayStart)!
+        return todayFoods.filter { food in
+            // Prefer recordDate, fallback to dailyRecord?.date for old data
+            let d = food.recordDate != Date.distantPast
+                ? food.recordDate
+                : (food.dailyRecord?.date ?? Date.distantPast)
+            return d >= dayStart && d < dayEnd
+        }
+    }
+
+    private var meals: [MealType: [FoodEntry]] {
+        var grouped: [MealType: [FoodEntry]] = [:]
+        for food in foodsForDate {
+            let meal = food.mealType ?? .snack
+            grouped[meal, default: []].append(food)
+        }
+        print("[NutritionCards] allFoods=\(todayFoods.count), forDate=\(foodsForDate.count), meals=\(grouped.mapValues { $0.count })")
+        return grouped
+    }
 
     var body: some View {
-        VStack(spacing: 12) {
-            ForEach(MealType.allCases, id: \.self) { meal in
-                mealCard(meal)
+        @Bindable var vm = self.vm
+        VStack(spacing: 0) {
+            ForEach(Array(MealType.allCases.enumerated()), id: \.element.self) { index, meal in
+                mealSection(meal)
+
+                if index < MealType.allCases.count - 1 {
+                    divider
+                }
+            }
+        }
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
+        .alert("确认删除", isPresented: $vm.showDeleteConfirmation) {
+            Button("取消", role: .cancel) {}
+            Button("删除", role: .destructive) {
+                if let food = vm.foodToDelete { vm.deleteFood(food) }
+            }
+        } message: {
+            Text("删除「\(vm.foodToDelete?.name ?? "")」？此操作不可撤销。")
+        }
+        .sheet(isPresented: $vm.showDetail) {
+            if let food = vm.selectedFood {
+                FoodEntryDetailView(food: food, onDelete: {
+                    vm.showDetail = false
+                    vm.deleteFood(food)
+                })
             }
         }
     }
 
-    private func mealCard(_ meal: MealType) -> some View {
-        let foods = vm.meals[meal] ?? []
+    // MARK: - Divider
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color(.systemGray6))
+            .frame(height: 1)
+            .padding(.leading, 56)
+    }
+
+    // MARK: - Meal Section
+
+    private func mealSection(_ meal: MealType) -> some View {
+        let foods = meals[meal] ?? []
         let totalCal = foods.reduce(0) { $0 + $1.calories }
+        let color = AppColors.mealColor(meal)
 
         return VStack(spacing: 0) {
-            // Header
-            HStack {
-                Circle()
-                    .fill(mealColors[meal] ?? .gray)
-                    .frame(width: 8, height: 8)
-                Text(meal.rawValue)
-                    .font(.subheadline.weight(.medium))
+            // Header row
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.12))
+                        .frame(width: 36, height: 36)
+                    Text(mealEmoji(meal))
+                        .font(.system(size: 18))
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(meal.rawValue)
+                        .font(.subheadline.weight(.semibold))
+                    if totalCal > 0 {
+                        Text("\(Int(totalCal)) kcal")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Spacer()
-                Text("\(Int(totalCal)) kcal")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
 
                 Button {
+                    Haptic.light()
                     addFoodVM.targetMealType = meal
                     addFoodVM.targetDate = date
                     vm.selectedMealType = meal
@@ -46,51 +117,48 @@ struct NutritionCards: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(color)
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 14)
 
-            if foods.isEmpty {
-                Text("暂无记录")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.bottom, 12)
-            } else {
-                Divider().padding(.horizontal, 16)
-
-                ForEach(foods) { food in
-                    foodRow(food)
+            if !foods.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(foods) { food in
+                        foodRow(food)
+                    }
                 }
             }
         }
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
+    // MARK: - Food Row
+
     private func foodRow(_ food: FoodEntry) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(food.name)
-                    .font(.subheadline)
-                Text(food.serving)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        SwipeableFoodRow(
+            food: food,
+            onTap: {
+                Haptic.light()
+                vm.selectedFood = food
+                vm.showDetail = true
+            },
+            onDeleteRequest: {
+                Haptic.warning()
+                vm.foodToDelete = food
+                vm.showDeleteConfirmation = true
             }
-            Spacer()
-            Text("\(Int(food.calories)) kcal")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                vm.deleteFood(food)
-                vm.loadFoods(for: record)
-            } label: {
-                Label("删除", systemImage: "trash")
-            }
+        )
+    }
+
+    // MARK: - Helpers
+
+    private func mealEmoji(_ meal: MealType) -> String {
+        switch meal {
+        case .breakfast: "🌅"
+        case .lunch: "☀️"
+        case .dinner: "🌙"
+        case .snack: "🍿"
         }
     }
 }
