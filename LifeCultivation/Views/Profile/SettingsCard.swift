@@ -23,17 +23,17 @@ struct SettingsCard: View {
 
             Divider()
 
-            Button {
-                _ = vm.exportData()
-            } label: {
-                HStack {
-                    Image(systemName: "square.and.arrow.up.fill")
-                        .font(.title3)
-                    Text("导出数据")
-                        .font(.subheadline.weight(.medium))
-                    Spacer()
+            if let json = vm.exportJSONString() {
+                ShareLink(item: json) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up.fill")
+                            .font(.title3)
+                        Text("导出数据")
+                            .font(.subheadline.weight(.medium))
+                        Spacer()
+                    }
+                    .foregroundStyle(.primary)
                 }
-                .foregroundStyle(.primary)
             }
         }
         .padding(20)

@@ -12,7 +12,6 @@ struct NutritionCards: View {
         self.date = date
         self.vm = vm
         self.addFoodVM = addFoodVM
-        print("[NutritionCards] init with date=\(date)")
         _todayFoods = Query(sort: \FoodEntry.timestamp)
     }
 
@@ -34,7 +33,6 @@ struct NutritionCards: View {
             let meal = food.mealType ?? .snack
             grouped[meal, default: []].append(food)
         }
-        print("[NutritionCards] allFoods=\(todayFoods.count), forDate=\(foodsForDate.count), meals=\(grouped.mapValues { $0.count })")
         return grouped
     }
 

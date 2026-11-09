@@ -40,7 +40,7 @@ final class DailyRecord {
         guard let p = profile,
               let h = p.height, h > 0,
               let a = p.age, a > 0,
-              let w = weight, w > 0 else { return 0 }
+              let w = weight ?? p.latestWeight, w > 0 else { return 0 }
         return CalorieCalculator.bmr(weightKg: w, heightCm: h, age: a, gender: p.gender)
     }
 

@@ -15,6 +15,7 @@ final class ProfileViewModel {
     var goalMetStreak: Int = 0
     var currentWeight: Double?
     var targetWeight: Double?
+    var initialWeight: Double?
     var showSettingsSheet = false
 
     init(modelContainer: ModelContainer, healthKitService: HealthKitServiceProtocol) {
@@ -24,6 +25,7 @@ final class ProfileViewModel {
 
     func loadProfile() {
         userProfile = UserProfile.fetchOrCreate(context: context)
+        loadWeightProgress()
         loadHealthKitData()
         updateStreaks()
     }
@@ -36,15 +38,48 @@ final class ProfileViewModel {
             if let age = try? await healthKitService.fetchAge() {
                 userProfile?.age = age
             }
-            if let weight = try? await healthKitService.fetchWeight(for: Date()) {
-                latestWeight = weight
+            if let weight = try? await healthKitService.fetchLatestWeight(), weight > 0 {
+                let today = Calendar.current.startOfDay(for: Date())
+                let descriptor = FetchDescriptor<DailyRecord>(predicate: #Predicate { $0.date == today })
+                let record: DailyRecord
+                if let existing = try? context.fetch(descriptor).first {
+                    record = existing
+                } else {
+                    record = DailyRecord(date: today)
+                    context.insert(record)
+                }
+                // Never overwrite a weight the user already recorded today.
+                if record.weight == nil { record.weight = weight }
+
+                if let current = record.weight {
+                    userProfile?.latestWeight = current
+                    if userProfile?.startWeight == nil { userProfile?.startWeight = current }
+                    latestWeight = current
+                    currentWeight = current
+                    initialWeight = userProfile?.startWeight
+                }
             }
             try? context.save()
         }
     }
 
     func saveWeight(_ weightKg: Double) {
-        // Write to today's DailyRecord (scale syncs weight to HealthKit, read-only here)
+        guard weightKg > 0 else { return }
+        saveWeightToTodayRecord(weightKg)
+        userProfile?.latestWeight = weightKg
+        if userProfile?.startWeight == nil { userProfile?.startWeight = weightKg }
+        try? context.save()
+
+        latestWeight = weightKg
+        currentWeight = weightKg
+        initialWeight = userProfile?.startWeight
+
+        // Best-effort write-back to HealthKit. Silent no-op when write access
+        // was never granted.
+        Task { try? await healthKitService.saveWeight(weightKg, date: Date()) }
+    }
+
+    private func saveWeightToTodayRecord(_ weightKg: Double) {
         let today = Calendar.current.startOfDay(for: Date())
         let descriptor = FetchDescriptor<DailyRecord>(predicate: #Predicate { $0.date == today })
         let record: DailyRecord
@@ -55,8 +90,6 @@ final class ProfileViewModel {
             context.insert(record)
         }
         record.weight = weightKg
-        try? context.save()
-        latestWeight = weightKg
     }
 
     func saveProfile() {
@@ -73,12 +106,32 @@ final class ProfileViewModel {
     }
 
     func loadWeightProgress() {
-        targetWeight = userProfile?.targetWeight
-        if latestWeight == nil {
-            Task {
-                latestWeight = try? await healthKitService.fetchWeight(for: Date())
-            }
+        guard let profile = userProfile else { return }
+        targetWeight = profile.targetWeight
+
+        let descriptor = FetchDescriptor<DailyRecord>(
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        let records = (try? context.fetch(descriptor)) ?? []
+        let latestRecordWeight = records.first { $0.weight != nil }?.weight
+        let earliestRecordWeight = records.last { $0.weight != nil }?.weight
+
+        if profile.startWeight == nil {
+            profile.startWeight = earliestRecordWeight ?? profile.latestWeight ?? latestRecordWeight
         }
+        if profile.latestWeight == nil {
+            profile.latestWeight = latestRecordWeight
+        }
+
+        currentWeight = profile.latestWeight ?? latestRecordWeight
+        initialWeight = profile.startWeight
+        latestWeight = currentWeight ?? latestWeight
+        try? context.save()
+    }
+
+    func exportJSONString() -> String? {
+        guard let data = exportData() else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     func exportData() -> Data? {

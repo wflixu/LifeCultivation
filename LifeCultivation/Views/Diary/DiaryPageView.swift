@@ -43,12 +43,10 @@ struct DiaryPageView: View {
         .scrollIndicators(.hidden)
         .containerRelativeFrame(.horizontal)
         .onAppear {
-            print("[DiaryPageView] onAppear date=\(date)")
             waterCardVM.load(from: record, profile: profile)
             exerciseCardVM.load(from: record, profile: profile)
         }
         .onChange(of: nutritionCardsVM.showAddFood) { _, show in
-            print("[DiaryPageView] showAddFood=\(show) date=\(date)")
             if show {
                 addFoodVM.targetDate = date
             }

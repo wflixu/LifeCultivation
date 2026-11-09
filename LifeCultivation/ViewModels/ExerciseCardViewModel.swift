@@ -27,8 +27,10 @@ final class ExerciseCardViewModel {
         stepCount = record.stepCount
         stepGoal = profile?.stepGoal ?? 10000
         exercises = record.exercises ?? []
-        // Read weight: record.weight first, fallback to 70
+        // Read weight: record.weight first, then profile cache, then the previous value.
         if let w = record.weight, w > 0 {
+            userWeight = w
+        } else if let w = profile?.latestWeight, w > 0 {
             userWeight = w
         }
     }
@@ -55,15 +57,13 @@ final class ExerciseCardViewModel {
         manualCalories: Double? = nil,
         intensity: String? = nil
     ) {
-        let calories: Double
-        switch calorieSource {
-        case .manual:
-            calories = manualCalories ?? 0
-        case .ai, .met:
-            let met = type.met
-            let wt = weight ?? userWeight
-            calories = CalorieCalculator.exerciseCalories(met: met, weightKg: wt, minutes: duration / 60)
-        }
+        let calories = caloriesFor(
+            type: type,
+            duration: duration,
+            weight: weight,
+            calorieSource: calorieSource,
+            manualCalories: manualCalories
+        )
 
         let entry = ExerciseEntry(
             exerciseType: type,
@@ -80,6 +80,51 @@ final class ExerciseCardViewModel {
         try? context.save()
 
         exercises = record.exercises ?? []
+    }
+
+    func updateExercise(
+        _ entry: ExerciseEntry,
+        type: ExerciseType,
+        duration: TimeInterval,
+        distance: Double?,
+        calorieSource: CalorieSource,
+        manualCalories: Double?,
+        intensity: String?
+    ) {
+        entry.exerciseType = type
+        entry.duration = duration
+        entry.distance = distance
+        entry.calorieSource = calorieSource
+        entry.calories = caloriesFor(
+            type: type,
+            duration: duration,
+            weight: nil,
+            calorieSource: calorieSource,
+            manualCalories: manualCalories
+        )
+        entry.intensity = intensity
+        try? context.save()
+        exercises = entry.dailyRecord?.exercises ?? exercises
+    }
+
+    private func caloriesFor(
+        type: ExerciseType,
+        duration: TimeInterval,
+        weight: Double?,
+        calorieSource: CalorieSource,
+        manualCalories: Double?
+    ) -> Double {
+        switch calorieSource {
+        case .manual, .ai:
+            return manualCalories ?? 0
+        case .met:
+            let wt = weight ?? userWeight
+            return CalorieCalculator.exerciseCalories(
+                met: type.met,
+                weightKg: wt,
+                minutes: duration / 60
+            )
+        }
     }
 
     func estimateExerciseCalories(

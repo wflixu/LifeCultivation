@@ -8,6 +8,7 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: 16) {
                 ProgressCard(vm: vm)
+                WeightEntryCard(vm: vm)
                 StreakCard(recordingStreak: vm.recordingStreak, goalMetStreak: vm.goalMetStreak)
                 GoalsCard(vm: vm)
                 SettingsCard(vm: vm)
@@ -50,13 +51,17 @@ struct SettingsSheet: View {
                         get: { vm.userProfile?.apiBaseURL ?? "" },
                         set: { vm.userProfile?.apiBaseURL = $0; vm.saveProfile() }
                     ))
+                    TextField("Model（如 deepseek-chat）", text: Binding(
+                        get: { vm.userProfile?.aiModel ?? "" },
+                        set: { vm.userProfile?.aiModel = $0; vm.saveProfile() }
+                    ))
                 }
 
                 Section {
-                    Button(role: .destructive) {
-                        _ = vm.exportData()
-                    } label: {
-                        Label("导出数据", systemImage: "square.and.arrow.up")
+                    if let json = vm.exportJSONString() {
+                        ShareLink(item: json) {
+                            Label("导出数据", systemImage: "square.and.arrow.up")
+                        }
                     }
                 } footer: {
                     Text("轻迹 v2.0")

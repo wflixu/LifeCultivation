@@ -24,7 +24,10 @@ struct AddFoodView: View {
                     cartBar
                 }
             }
-            .onAppear { vm.searchFavorites() }
+            .onAppear {
+                vm.reset()
+                vm.searchFavorites()
+            }
         }
     }
 
@@ -45,6 +48,9 @@ struct AddFoodView: View {
             Haptic.light()
             withAnimation(.spring(response: 0.3)) {
                 vm.selectedMode = tag
+            }
+            if tag == 0 {
+                vm.searchFavorites()
             }
         } label: {
             HStack(spacing: 6) {
@@ -88,6 +94,7 @@ struct AddFoodView: View {
                 TextField("搜索收藏食物", text: $vm.searchQuery)
                     .textFieldStyle(.plain)
                     .onSubmit { vm.searchFavorites() }
+                    .onChange(of: vm.searchQuery) { _, _ in vm.searchFavorites() }
                 if !vm.searchQuery.isEmpty {
                     Button {
                         vm.searchQuery = ""

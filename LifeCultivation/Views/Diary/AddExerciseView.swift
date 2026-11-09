@@ -14,10 +14,21 @@ struct AddExerciseView: View {
     @State private var aiEstimatedCalories: Double?
     @State private var isAIEstimating = false
     @State private var aiError: String?
+    @State private var didPrefill = false
 
     @Environment(\.dismiss) private var dismiss
 
     private let durationMinutes: [Int] = [5, 10, 15, 20, 30, 45, 60, 90, 120]
+
+    private var availableDurations: [Int] {
+        var minutes = durationMinutes
+        let existing = Int(duration / 60)
+        if existing > 0, !minutes.contains(existing) {
+            minutes.append(existing)
+            minutes.sort()
+        }
+        return minutes
+    }
 
     var distanceBased: Bool {
         switch selectedType {
@@ -52,7 +63,7 @@ struct AddExerciseView: View {
         case .manual:
             return manualCalories > 0
         case .ai:
-            return true
+            return aiEstimatedCalories != nil
         }
     }
 
@@ -67,8 +78,9 @@ struct AddExerciseView: View {
                 calorieSourceSection
                 calorieDetailSection
             }
-            .navigationTitle("添加运动")
+            .navigationTitle(vm.editingExercise == nil ? "添加运动" : "编辑运动")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { prefillFromEditing() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }
@@ -124,7 +136,7 @@ struct AddExerciseView: View {
     private var durationSection: some View {
         Section("时长") {
             Picker("时长", selection: $duration) {
-                ForEach(durationMinutes, id: \.self) { min in
+                ForEach(availableDurations, id: \.self) { min in
                     Text("\(min) 分钟")
                         .tag(TimeInterval(min * 60))
                 }
@@ -223,17 +235,45 @@ struct AddExerciseView: View {
 
     // MARK: - Submit
 
+    private func prefillFromEditing() {
+        guard !didPrefill, let exercise = vm.editingExercise else { return }
+        didPrefill = true
+        selectedType = exercise.exerciseType
+        duration = exercise.duration
+        distance = exercise.distance
+        calorieSource = exercise.calorieSource
+        manualCalories = exercise.calorieSource == .manual ? exercise.calories : 0
+        intensity = exercise.intensity ?? ""
+        if exercise.calorieSource == .ai {
+            aiEstimatedCalories = exercise.calories
+        }
+    }
+
     private func submit() {
-        vm.addManualExercise(
-            selectedType,
-            duration: duration,
-            distance: distanceBased ? distance : nil,
-            weight: nil,
-            to: date,
-            calorieSource: calorieSource,
-            manualCalories: calorieSource == .manual ? manualCalories : nil,
-            intensity: calorieSource == .ai ? intensity : nil
-        )
+        let manualValue: Double? = calorieSource == .met ? nil : effectiveCalories
+
+        if let editing = vm.editingExercise {
+            vm.updateExercise(
+                editing,
+                type: selectedType,
+                duration: duration,
+                distance: distanceBased ? distance : nil,
+                calorieSource: calorieSource,
+                manualCalories: manualValue,
+                intensity: calorieSource == .ai ? intensity : nil
+            )
+        } else {
+            vm.addManualExercise(
+                selectedType,
+                duration: duration,
+                distance: distanceBased ? distance : nil,
+                weight: nil,
+                to: date,
+                calorieSource: calorieSource,
+                manualCalories: manualValue,
+                intensity: calorieSource == .ai ? intensity : nil
+            )
+        }
         dismiss()
     }
 

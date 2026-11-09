@@ -3,6 +3,7 @@ import Charts
 
 struct NutritionDetailView: View {
     let record: DailyRecord?
+    let profile: UserProfile?
 
     var body: some View {
         NavigationStack {
@@ -42,7 +43,7 @@ struct NutritionDetailView: View {
                     Text("消耗 (TDEE)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("\(Int(record.tdee)) kcal")
+                    Text("\(Int(record.effectiveTDEE(profile: profile) + record.exerciseCalories)) kcal")
                         .font(.title3.weight(.medium))
                 }
             }
@@ -50,7 +51,7 @@ struct NutritionDetailView: View {
             HStack {
                 Text("净摄入")
                 Spacer()
-                let net = record.netCalories
+                let net = record.totalIntake - record.effectiveTDEE(profile: profile) - record.exerciseCalories
                 Text(net >= 0 ? "+\(Int(net)) kcal" : "\(Int(net)) kcal")
                     .foregroundStyle(net > 0 ? .red : .green)
                     .fontWeight(.medium)

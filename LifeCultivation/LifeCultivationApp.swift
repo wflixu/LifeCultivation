@@ -39,9 +39,12 @@ struct LifeCultivationApp: App {
         healthKitService = hk
 
         let profile = UserProfile.fetchOrCreate(context: container.mainContext)
-        let apiKey = profile.apiKey?.isEmpty == false ? profile.apiKey! : Self.defaultAPIKey
-        let baseURL = profile.apiBaseURL?.isEmpty == false ? profile.apiBaseURL! : Self.defaultBaseURL
-        nutritionService = AINutritionService(apiKey: apiKey, baseURL: baseURL, model: Self.defaultModel)
+        nutritionService = AINutritionService(
+            profile: profile,
+            defaultAPIKey: Self.defaultAPIKey,
+            defaultBaseURL: Self.defaultBaseURL,
+            defaultModel: Self.defaultModel
+        )
 
         _diaryVM = State(initialValue: DiaryViewModel(modelContainer: container, healthKitService: hk))
         _nutritionCardsVM = State(initialValue: NutritionCardsViewModel(modelContainer: container))

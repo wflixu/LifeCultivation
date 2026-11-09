@@ -11,6 +11,11 @@ final class UserProfile {
     var age: Int?
     var apiKey: String?
     var apiBaseURL: String?
+    var aiModel: String?
+    /// Cached most recent weight, used when a day has no weight reading of its own.
+    var latestWeight: Double?
+    /// Weight at the start of the current goal, used for progress calculation.
+    var startWeight: Double?
     var genderRawValue: String = Gender.male.rawValue
 
     @Transient

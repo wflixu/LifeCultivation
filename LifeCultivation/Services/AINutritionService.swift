@@ -28,6 +28,7 @@ struct ExerciseCalorieEstimation: Codable, Sendable {
 
 // MARK: - Protocol
 
+@MainActor
 protocol NutritionServiceProtocol: Sendable {
     func recognizeFood(description: String, imageData: Data?) async throws -> [RecognizedFood]
     func suggestNutrition(foodName: String, serving: String) async throws -> [NutritionSuggestion]
@@ -36,20 +37,44 @@ protocol NutritionServiceProtocol: Sendable {
 
 // MARK: - Implementation
 
+@MainActor
 final class AINutritionService: NutritionServiceProtocol {
-    private let apiKey: String
-    private let baseURL: String
-    private let model: String
+    private let profile: UserProfile
+    private let defaultAPIKey: String
+    private let defaultBaseURL: String
+    private let defaultModel: String
+
+    private var apiKey: String {
+        let stored = profile.apiKey?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return stored.isEmpty ? defaultAPIKey : stored
+    }
+
+    private var baseURL: String {
+        let stored = profile.apiBaseURL?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !stored.isEmpty { return stored }
+        return defaultBaseURL.isEmpty ? "https://api.anthropic.com" : defaultBaseURL
+    }
+
+    private var model: String {
+        let stored = profile.aiModel?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return stored.isEmpty ? defaultModel : stored
+    }
 
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
         return d
     }()
 
-    init(apiKey: String, baseURL: String? = nil, model: String = "claude-sonnet-4-6") {
-        self.apiKey = apiKey
-        self.baseURL = baseURL ?? "https://api.anthropic.com"
-        self.model = model
+    init(
+        profile: UserProfile,
+        defaultAPIKey: String = "",
+        defaultBaseURL: String = "",
+        defaultModel: String = "claude-sonnet-4-6"
+    ) {
+        self.profile = profile
+        self.defaultAPIKey = defaultAPIKey
+        self.defaultBaseURL = defaultBaseURL
+        self.defaultModel = defaultModel
     }
 
     func recognizeFood(description: String, imageData: Data? = nil) async throws -> [RecognizedFood] {
@@ -205,10 +230,20 @@ final class AINutritionService: NutritionServiceProtocol {
     // MARK: - Private
 
     private func makeRequest(body: [String: Any]) async throws -> Data {
-        let url = URL(string: "\(baseURL)/v1/messages")!
+        let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else { throw NutritionError.missingAPIKey }
+
+        let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = trimmedBaseURL.hasSuffix("/")
+            ? String(trimmedBaseURL.dropLast())
+            : trimmedBaseURL
+        guard let url = URL(string: "\(base)/v1/messages") else {
+            throw NutritionError.apiError
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue(key, forHTTPHeaderField: "x-api-key")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -302,12 +337,14 @@ enum NutritionError: Error, LocalizedError {
     case apiError
     case invalidResponse
     case networkError
+    case missingAPIKey
 
     var errorDescription: String? {
         switch self {
         case .apiError: "AI 服务请求失败，请检查 API Key"
         case .invalidResponse: "AI 返回数据异常，请重试"
         case .networkError: "网络连接失败，请检查网络"
+        case .missingAPIKey: "请先在个人资料中配置 API Key"
         }
     }
 }

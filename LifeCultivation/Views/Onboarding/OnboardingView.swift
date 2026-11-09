@@ -4,8 +4,6 @@ import UIKit
 struct OnboardingView: View {
     @Bindable var vm: OnboardingViewModel
 
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -16,7 +14,6 @@ struct OnboardingView: View {
                     activityStep.tag(OnboardingStep.activityLevel)
                     targetWeightStep.tag(OnboardingStep.targetWeight)
                     apiStep.tag(OnboardingStep.apiKey)
-                    doneStep.tag(OnboardingStep.done)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
@@ -152,6 +149,26 @@ struct OnboardingView: View {
                         .frame(width: 100)
                         .textFieldStyle(.roundedBorder)
                 }
+                HStack {
+                    Text("当前体重 (kg)")
+                    Spacer()
+                    TextField("70", value: $vm.weight, format: .number)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 100)
+                        .textFieldStyle(.roundedBorder)
+                }
+                HStack {
+                    Text("性别")
+                    Spacer()
+                    Picker("性别", selection: $vm.gender) {
+                        ForEach(Gender.allCases, id: \.self) { gender in
+                            Text(gender.rawValue).tag(gender)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 120)
+                }
             }
             .padding(20)
             .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
@@ -273,27 +290,6 @@ struct OnboardingView: View {
             Spacer()
         }
         .padding(32)
-    }
-
-    private var doneStep: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.green)
-            Text("准备就绪！")
-                .font(.largeTitle.weight(.bold))
-            Text("开始你的健康之旅吧")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-        .padding(32)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                dismiss()
-            }
-        }
     }
 
     // MARK: - Helpers

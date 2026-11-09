@@ -33,7 +33,9 @@ struct ExerciseCard: View {
         .padding(20)
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
         .appCardShadow()
-        .sheet(isPresented: $vm.showAddExercise) {
+        .sheet(isPresented: $vm.showAddExercise, onDismiss: {
+            vm.editingExercise = nil
+        }) {
             AddExerciseView(vm: vm, date: date)
         }
     }

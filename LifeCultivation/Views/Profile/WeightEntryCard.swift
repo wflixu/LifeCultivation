@@ -10,7 +10,7 @@ struct WeightEntryCard: View {
                 Text("记录体重")
                     .font(.headline)
                 Spacer()
-                if let latest = vm.latestWeight {
+                if let latest = vm.currentWeight ?? vm.latestWeight {
                     Text("最新: \(String(format: "%.1f", latest)) kg")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -38,6 +38,6 @@ struct WeightEntryCard: View {
         .padding(20)
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
         .appCardShadow()
-        .onAppear { weightInput = vm.latestWeight ?? 70 }
+        .onAppear { weightInput = vm.currentWeight ?? vm.latestWeight ?? 70 }
     }
 }

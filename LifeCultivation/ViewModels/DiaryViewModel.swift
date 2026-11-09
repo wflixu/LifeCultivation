@@ -81,25 +81,44 @@ final class DiaryViewModel {
         let start = currentDate
         let end = Calendar.current.date(byAdding: .day, value: 1, to: start)!
 
-        if record.stepCount == 0 {
-            if let steps = try? await healthKitService.fetchStepCount(from: start, to: end) {
-                record.stepCount = steps
-            }
+        // Always overwrite with the latest HealthKit values so today's numbers
+        // keep updating as the day progresses.
+        if let steps = try? await healthKitService.fetchStepCount(from: start, to: end) {
+            record.stepCount = steps
         }
-        if record.restingEnergy == nil {
-            if let re = try? await healthKitService.fetchRestingEnergy(from: start, to: end), re > 0 {
-                record.restingEnergy = re
-            }
+        if let re = try? await healthKitService.fetchRestingEnergy(from: start, to: end), re > 0 {
+            record.restingEnergy = re
         }
-        if record.activeEnergy == nil {
-            if let ae = try? await healthKitService.fetchActiveEnergy(from: start, to: end), ae > 0 {
-                record.activeEnergy = ae
-            }
+        if let ae = try? await healthKitService.fetchActiveEnergy(from: start, to: end), ae > 0 {
+            record.activeEnergy = ae
         }
+
+        // Refresh the cached latest weight for the TDEE fallback. Only today's
+        // record receives the reading; historical days keep their own value.
+        if Calendar.current.isDateInToday(currentDate) {
+            let profile = UserProfile.fetchOrCreate(context: context)
+            if let weight = try? await healthKitService.fetchLatestWeight(), weight > 0 {
+                // A weight already recorded for today wins over the HealthKit
+                // sample, so a manual entry is never silently overwritten.
+                if record.weight == nil { record.weight = weight }
+            }
+            if let current = record.weight {
+                profile.latestWeight = current
+                if profile.startWeight == nil { profile.startWeight = current }
+            }
+            userProfile = profile
+        }
+
         try? context.save()
     }
 
     func syncHealthKitForToday() async {
+        await syncHealthKitForCurrentDate()
+    }
+
+    /// Called when the app returns to the foreground.
+    func refreshForToday() async {
+        guard Calendar.current.isDateInToday(currentDate) else { return }
         await syncHealthKitForCurrentDate()
     }
 

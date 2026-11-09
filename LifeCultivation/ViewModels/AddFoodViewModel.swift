@@ -59,14 +59,17 @@ final class AddFoodViewModel {
         }
     }
 
+    func reset() {
+        selectedMode = 0
+        searchQuery = ""
+        inputText = ""
+        viewState = .initial
+        cart = []
+        favoriteIndices = []
+    }
+
     func recognizeFood() {
         guard !inputText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-
-        let profile = UserProfile.fetchOrCreate(context: context)
-        guard let key = profile.apiKey, !key.isEmpty else {
-            viewState = .aiError("请先在个人资料中配置 API Key")
-            return
-        }
 
         viewState = .aiLoading
 
@@ -121,17 +124,14 @@ final class AddFoodViewModel {
         guard !cart.isEmpty else { return }
 
         let dayStart = Calendar.current.startOfDay(for: targetDate)
-        print("[commit] targetDate=\(targetDate), dayStart=\(dayStart), cartCount=\(cart.count), mealType=\(String(describing: targetMealType))")
 
         let descriptor = FetchDescriptor<DailyRecord>(predicate: #Predicate { $0.date == dayStart })
         let record: DailyRecord
         if let existing = try? context.fetch(descriptor).first {
             record = existing
-            print("[commit] found existing DailyRecord for date")
         } else {
             record = DailyRecord(date: dayStart)
             context.insert(record)
-            print("[commit] created new DailyRecord for date")
         }
 
         for item in cart {
@@ -148,19 +148,13 @@ final class AddFoodViewModel {
             )
             entry.dailyRecord = record
             context.insert(entry)
-            print("[commit] inserted FoodEntry: name=\(item.name), recordDate=\(dayStart), mealType=\(String(describing: item.mealType))")
 
             if let favRef = item.favoriteRef {
                 favRef.useCount += 1
                 favRef.lastUsed = Date()
             }
         }
-        do {
-            try context.save()
-            print("[commit] save succeeded, cart cleared")
-        } catch {
-            print("[commit] save FAILED: \(error)")
-        }
+        try? context.save()
         cart.removeAll()
     }
 

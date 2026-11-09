@@ -15,7 +15,6 @@ final class RecipeViewModel {
     var selectedCategory: FoodCategory?
     var showFoodEdit = false
     var editingFood: FavoriteFood?
-    var showAddToDiarySheet = false
 
     var aiSuggestions: [NutritionSuggestion] = []
     var isAISuggesting = false
@@ -106,7 +105,8 @@ final class RecipeViewModel {
             source: .favorite,
             protein: food.protein,
             fat: food.fat,
-            carbs: food.carbs
+            carbs: food.carbs,
+            recordDate: dayStart
         )
         entry.dailyRecord = record
         context.insert(entry)

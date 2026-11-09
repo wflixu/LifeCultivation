@@ -10,6 +10,7 @@ struct ContentView: View {
     @Bindable var profileVM: ProfileViewModel
 
     @State private var selectedTab = 0
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -56,6 +57,11 @@ struct ContentView: View {
             appearance.configureWithDefaultBackground()
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await diaryVM.refreshForToday() }
+            }
         }
         .onChange(of: nutritionCardsVM.showAddFood) { _, show in
             if show {

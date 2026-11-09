@@ -19,6 +19,7 @@ protocol HealthKitServiceProtocol {
     func fetchRestingEnergy(from start: Date, to end: Date) async throws -> Double?
     func fetchActiveEnergy(from start: Date, to end: Date) async throws -> Double?
     func fetchWeight(for date: Date) async throws -> Double?
+    func fetchLatestWeight() async throws -> Double?
     func fetchHeight() async throws -> Double?
     func fetchAge() async throws -> Int?
     func fetchStepCount(from start: Date, to end: Date) async throws -> Int?
@@ -67,7 +68,12 @@ final class HealthKitService: HealthKitServiceProtocol {
         return Set(types).union([HKObjectType.workoutType()])
     }
 
-    private var writeTypes: Set<HKSampleType> { [] }
+    private var writeTypes: Set<HKSampleType> {
+        if let bodyMass = HKObjectType.quantityType(forIdentifier: .bodyMass) {
+            return [bodyMass]
+        }
+        return []
+    }
 
     func requestAuthorization() async throws {
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -115,6 +121,12 @@ final class HealthKitService: HealthKitServiceProtocol {
         return samples.first?.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
     }
 
+    func fetchLatestWeight() async throws -> Double? {
+        guard let type = HKObjectType.quantityType(forIdentifier: .bodyMass) else { return nil }
+        let samples = try await fetchSamples(for: type, predicate: nil, limit: 1, sortDescending: true)
+        return samples.first?.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+    }
+
     func saveWeight(_ weightKg: Double, date: Date) async throws {
         guard let type = HKObjectType.quantityType(forIdentifier: .bodyMass) else { return }
         let quantity = HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: weightKg)
@@ -136,7 +148,7 @@ final class HealthKitService: HealthKitServiceProtocol {
     }
 
     func fetchAge() async throws -> Int? {
-        guard let birthday = try? await healthStore.dateOfBirthComponents(),
+        guard let birthday = try? healthStore.dateOfBirthComponents(),
               let date = birthday.date else { return nil }
         return Calendar.current.dateComponents([.year], from: date, to: Date()).year
     }
@@ -162,11 +174,14 @@ final class HealthKitService: HealthKitServiceProtocol {
 
         let kcal = HKUnit.kilocalorie()
         let km = HKUnit.meterUnit(with: .kilo)
+        let activeEnergyType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)
         return workouts.compactMap { w in
-            HealthKitWorkout(
+            let energy = activeEnergyType
+                .flatMap { w.statistics(for: $0)?.sumQuantity()?.doubleValue(for: kcal) }
+            return HealthKitWorkout(
                 type: mapWorkoutType(w.workoutActivityType),
                 duration: w.duration / 60,
-                calories: w.totalEnergyBurned?.doubleValue(for: kcal) ?? 0,
+                calories: energy ?? 0,
                 distance: w.totalDistance?.doubleValue(for: km),
                 date: w.startDate
             )

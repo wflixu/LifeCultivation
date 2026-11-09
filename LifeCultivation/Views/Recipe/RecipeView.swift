@@ -5,6 +5,8 @@ struct RecipeView: View {
 
     @State private var showDeleteConfirmation = false
     @State private var foodToDelete: FavoriteFood?
+    @State private var actionFood: FavoriteFood?
+    @State private var showActionSheet = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -96,8 +98,9 @@ struct RecipeView: View {
                         RecipeFoodRow(food: food)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                vm.editingFood = food
-                                vm.showFoodEdit = true
+                                Haptic.light()
+                                actionFood = food
+                                showActionSheet = true
                             }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) {
@@ -129,6 +132,31 @@ struct RecipeView: View {
         } message: {
             Text("删除「\(foodToDelete?.name ?? "")」？此操作不可撤销。")
         }
+        .confirmationDialog("食物操作", isPresented: $showActionSheet, presenting: actionFood) { food in
+            Button("编辑") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    vm.editingFood = food
+                    vm.showFoodEdit = true
+                }
+            }
+            ForEach(MealType.allCases, id: \.self) { meal in
+                Button("添加到\(meal.rawValue)") {
+                    addToDiary(food, meal: meal)
+                }
+            }
+            Button("删除", role: .destructive) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    foodToDelete = food
+                    showDeleteConfirmation = true
+                }
+            }
+        } message: { food in
+            Text("\(food.name) · 添加到今天")
+        }
     }
 
+    private func addToDiary(_ food: FavoriteFood, meal: MealType) {
+        vm.addToDiary(food, mealType: meal, date: Date())
+        Haptic.success()
+    }
 }

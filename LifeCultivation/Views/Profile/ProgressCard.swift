@@ -12,9 +12,16 @@ struct ProgressCard: View {
             }
 
             if let target = vm.targetWeight, let current = vm.currentWeight ?? vm.latestWeight {
-                let lost = current - target
-                let initial = target + max(lost, 1)
-                let progress = max(0, min(1, (initial - current) / (initial - target)))
+                let initial = vm.initialWeight ?? current
+                let totalToLose = initial - target
+                let lostSoFar = initial - current
+                let remainingToLose = current - target
+                let progress: Double = {
+                    guard totalToLose > 0 else {
+                        return current <= target ? 1 : 0
+                    }
+                    return max(0, min(1, lostSoFar / totalToLose))
+                }()
 
                 VStack(spacing: 8) {
                     HStack(alignment: .firstTextBaseline) {
@@ -44,7 +51,7 @@ struct ProgressCard: View {
                             Capsule()
                                 .fill(
                                     LinearGradient(
-                                        gradient: Gradient(colors: lost <= 0 ? [.green, .mint] : [AppColors.primary, AppColors.primary.opacity(0.6)]),
+                                        gradient: Gradient(colors: remainingToLose <= 0 ? [.green, .mint] : [AppColors.primary, AppColors.primary.opacity(0.6)]),
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -56,13 +63,20 @@ struct ProgressCard: View {
                     .frame(height: 10)
 
                     HStack {
-                        Text(lost <= 0 ? "已达标" : "还需减重 \(String(format: "%.1f", abs(lost))) kg")
+                        Text(remainingToLose <= 0 ? "已达标" : "还需减重 \(String(format: "%.1f", abs(remainingToLose))) kg")
                             .font(.caption)
-                            .foregroundStyle(lost <= 0 ? .green : .secondary)
+                            .foregroundStyle(remainingToLose <= 0 ? .green : .secondary)
                         Spacer()
                         Text("\(Int(progress * 100))%")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+
+                    if lostSoFar > 0 {
+                        Text("已减重 \(String(format: "%.1f", lostSoFar)) kg · 起始 \(String(format: "%.1f", initial)) kg")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             } else {

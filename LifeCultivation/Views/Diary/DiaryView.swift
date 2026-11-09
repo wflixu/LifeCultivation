@@ -26,7 +26,7 @@ struct DiaryView: View {
         }
         .background(AppColors.surfaceBackground)
         .sheet(isPresented: $diaryVM.showNutritionDetail) {
-            NutritionDetailView(record: diaryVM.records[diaryVM.currentDate])
+            NutritionDetailView(record: diaryVM.records[diaryVM.currentDate], profile: diaryVM.userProfile)
         }
     }
 

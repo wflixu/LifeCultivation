@@ -96,6 +96,7 @@
 				5C2CB88C2ED3555E004AA0BB /* Sources */,
 				5C2CB88D2ED3555E004AA0BB /* Frameworks */,
 				5C2CB88E2ED3555E004AA0BB /* Resources */,
+				A1B2C3D4E5F60718293A4B50 /* Copy dev-config.json */,
 			);
 			buildRules = (
 			);
@@ -210,6 +211,28 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A1B2C3D4E5F60718293A4B50 /* Copy dev-config.json */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy dev-config.json";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$CONFIGURATION\" = \"Debug\" ] && [ -f \"$SRCROOT/dev-config.json\" ]; then\n  cp \"$SRCROOT/dev-config.json\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/dev-config.json\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5C2CB88C2ED3555E004AA0BB /* Sources */ = {
@@ -376,6 +399,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "轻迹";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
@@ -418,6 +442,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "轻迹";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";

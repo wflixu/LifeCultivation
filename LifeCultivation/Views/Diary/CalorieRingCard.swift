@@ -27,12 +27,32 @@ struct CalorieRingCard: View {
 
     var body: some View {
         VStack(spacing: 20) {
+            header
             calorieRow
             macroRow
         }
         .padding(20)
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
         .appCardShadow()
+    }
+
+    private var header: some View {
+        HStack {
+            Text("今日热量")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button {
+                Haptic.light()
+                showNutritionDetail.wrappedValue = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("营养详情")
+        }
     }
 
     // MARK: - Row 1: 已摄入 | 半圆环(文字在内) | 已消耗

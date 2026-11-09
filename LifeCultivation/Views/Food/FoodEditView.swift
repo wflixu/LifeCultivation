@@ -145,7 +145,11 @@ struct FoodEditView: View {
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || calories <= 0)
                 }
             }
-            .onAppear { loadFood() }
+            .onAppear {
+                loadFood()
+                vm.aiSuggestions = []
+                vm.aiSuggestionError = nil
+            }
         }
     }
 
