@@ -20,12 +20,19 @@ final class WaterCardViewModel {
         targetCups = Int((profile?.dailyWaterTarget ?? 2.0) / 0.25)
     }
 
-    func toggleCup(increment: Bool, record: DailyRecord) {
-        if increment {
-            record.waterCups = min(targetCups, record.waterCups + 1)
+    func setCups(_ value: Int, record: DailyRecord) {
+        // Clicking the N-th bar toggles between N and N-1
+        if value == currentCups {
+            record.waterCups = max(0, value - 1)
         } else {
-            record.waterCups = max(0, record.waterCups - 1)
+            record.waterCups = min(targetCups, value)
         }
+        try? context.save()
+        currentCups = record.waterCups
+    }
+
+    func adjustCups(by delta: Int, record: DailyRecord) {
+        record.waterCups = max(0, min(targetCups, record.waterCups + delta))
         try? context.save()
         currentCups = record.waterCups
     }

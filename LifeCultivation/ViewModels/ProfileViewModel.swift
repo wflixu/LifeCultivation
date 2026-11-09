@@ -30,8 +30,8 @@ final class ProfileViewModel {
 
     private func loadHealthKitData() {
         Task {
-            if let height = try? await healthKitService.fetchHeight() {
-                userProfile?.height = height
+            if let heightM = try? await healthKitService.fetchHeight(), heightM > 0 {
+                userProfile?.height = heightM * 100  // HealthKit returns meters, store as cm
             }
             if let age = try? await healthKitService.fetchAge() {
                 userProfile?.age = age

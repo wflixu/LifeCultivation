@@ -24,7 +24,7 @@ struct DiaryView: View {
             dateHeader
             diaryPages
         }
-        .background(Color(.systemGroupedBackground))
+        .background(AppColors.surfaceBackground)
         .sheet(isPresented: $diaryVM.showNutritionDetail) {
             NutritionDetailView(record: diaryVM.records[diaryVM.currentDate])
         }
@@ -45,7 +45,7 @@ struct DiaryView: View {
             } label: {
                 Image(systemName: "calendar")
                     .font(.title3)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(AppColors.primary)
             }
             .sheet(isPresented: $showCalendarPicker) {
                 VStack {
@@ -79,6 +79,7 @@ struct DiaryView: View {
                 ForEach(dates, id: \.self) { date in
                     DiaryPageView(
                         record: diaryVM.records[date],
+                        profile: diaryVM.userProfile,
                         nutritionCardsVM: nutritionCardsVM,
                         waterCardVM: waterCardVM,
                         exerciseCardVM: exerciseCardVM,

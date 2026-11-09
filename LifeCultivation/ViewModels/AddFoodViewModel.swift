@@ -18,6 +18,7 @@ struct CartItem: Identifiable {
     let protein: Double?
     let fat: Double?
     let carbs: Double?
+    let mealType: MealType?
     let isFavorite: Bool
     var favoriteRef: FavoriteFood?
 }
@@ -91,6 +92,7 @@ final class AddFoodViewModel {
             protein: recognized.protein,
             fat: recognized.fat,
             carbs: recognized.carbs,
+            mealType: targetMealType,
             isFavorite: false
         )
         cart.append(item)
@@ -104,6 +106,7 @@ final class AddFoodViewModel {
             protein: favorite.protein,
             fat: favorite.fat,
             carbs: favorite.carbs,
+            mealType: targetMealType,
             isFavorite: true,
             favoriteRef: favorite
         )
@@ -115,14 +118,20 @@ final class AddFoodViewModel {
     }
 
     func commit() {
+        guard !cart.isEmpty else { return }
+
         let dayStart = Calendar.current.startOfDay(for: targetDate)
+        print("[commit] targetDate=\(targetDate), dayStart=\(dayStart), cartCount=\(cart.count), mealType=\(String(describing: targetMealType))")
+
         let descriptor = FetchDescriptor<DailyRecord>(predicate: #Predicate { $0.date == dayStart })
         let record: DailyRecord
         if let existing = try? context.fetch(descriptor).first {
             record = existing
+            print("[commit] found existing DailyRecord for date")
         } else {
             record = DailyRecord(date: dayStart)
             context.insert(record)
+            print("[commit] created new DailyRecord for date")
         }
 
         for item in cart {
@@ -130,22 +139,29 @@ final class AddFoodViewModel {
                 name: item.name,
                 calories: item.calories,
                 serving: item.serving,
-                mealType: targetMealType,
+                mealType: item.mealType,
                 source: item.isFavorite ? .favorite : .text,
                 protein: item.protein,
                 fat: item.fat,
-                carbs: item.carbs
+                carbs: item.carbs,
+                recordDate: dayStart
             )
             entry.dailyRecord = record
             context.insert(entry)
+            print("[commit] inserted FoodEntry: name=\(item.name), recordDate=\(dayStart), mealType=\(String(describing: item.mealType))")
 
-            // Update useCount for favorite
             if let favRef = item.favoriteRef {
                 favRef.useCount += 1
                 favRef.lastUsed = Date()
             }
         }
-        try? context.save()
+        do {
+            try context.save()
+            print("[commit] save succeeded, cart cleared")
+        } catch {
+            print("[commit] save FAILED: \(error)")
+        }
+        cart.removeAll()
     }
 
     func favoriteFood(at index: Int) {

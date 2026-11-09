@@ -30,13 +30,14 @@ struct WeightEntryCard: View {
                         .fontWeight(.medium)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 8)
-                        .background(Color.orange, in: RoundedRectangle(cornerRadius: 8))
+                        .background(AppColors.primary, in: RoundedRectangle(cornerRadius: 8))
                         .foregroundStyle(.white)
                 }
             }
         }
         .padding(20)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
         .onAppear { weightInput = vm.latestWeight ?? 70 }
     }
 }

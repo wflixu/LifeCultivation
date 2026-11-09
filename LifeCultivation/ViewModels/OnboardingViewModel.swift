@@ -25,7 +25,7 @@ final class OnboardingViewModel {
     var activityLevel: ActivityLevel = .light
     var targetWeight: Double = 70
     var apiKey: String = ""
-    var baseURL: String = ""
+    var baseURL: String = "https://api.deepseek.com/anthropic"
     var healthKitDenied = false
 
     init(modelContainer: ModelContainer, healthKitService: HealthKitServiceProtocol) {

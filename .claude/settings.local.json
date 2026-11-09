@@ -10,7 +10,13 @@
       "Bash(xcrun simctl install:*)",
       "Bash(open:*)",
       "Bash(xcrun:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(gem list *)",
+      "WebSearch",
+      "Read(//Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/HealthKit.framework/Modules/HealthKit.swiftmodule/**)",
+      "Bash(xcodebuild -scheme LifeCultivation -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)",
+      "Bash(xcrun simctl *)",
+      "Bash(open -a Simulator)"
     ],
     "deny": [],
     "ask": []

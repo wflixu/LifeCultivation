@@ -44,7 +44,7 @@ struct OnboardingView: View {
 
         return VStack(spacing: 8) {
             ProgressView(value: current / total)
-                .tint(.orange)
+                .tint(AppColors.primary)
                 .padding(.horizontal, 20)
             Text("\(vm.currentStep.rawValue + 1) / \(OnboardingStep.allCases.count)")
                 .font(.caption)
@@ -61,8 +61,8 @@ struct OnboardingView: View {
             Spacer()
             Image(systemName: "leaf.circle.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.orange)
-            Text("人生修行")
+                .foregroundStyle(AppColors.primary)
+            Text("轻迹")
                 .font(.largeTitle.weight(.bold))
             Text("AI 赋能的科学减重助手")
                 .font(.title3)
@@ -94,7 +94,7 @@ struct OnboardingView: View {
             if vm.healthKitDenied {
                 Label("健康权限被拒绝，您可以手动输入数据", systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(AppColors.primary)
             }
 
             VStack(spacing: 12) {
@@ -188,13 +188,13 @@ struct OnboardingView: View {
                             Spacer()
                             if vm.activityLevel == level {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.orange)
+                                    .foregroundStyle(AppColors.primary)
                             }
                         }
                         .padding(12)
                         .background(
                             vm.activityLevel == level
-                                ? Color.orange.opacity(0.1)
+                                ? AppColors.primaryLight
                                 : Color(.systemGray6),
                             in: RoundedRectangle(cornerRadius: 10)
                         )
@@ -247,7 +247,7 @@ struct OnboardingView: View {
             Spacer()
             Image(systemName: "key.fill")
                 .font(.system(size: 60))
-                .foregroundStyle(.orange)
+                .foregroundStyle(AppColors.primary)
 
             Text("AI 服务配置")
                 .font(.title2.weight(.bold))
@@ -304,7 +304,7 @@ struct OnboardingView: View {
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.orange, in: RoundedRectangle(cornerRadius: 10))
+                .background(AppColors.primary, in: RoundedRectangle(cornerRadius: 10))
                 .foregroundStyle(.white)
         }
     }

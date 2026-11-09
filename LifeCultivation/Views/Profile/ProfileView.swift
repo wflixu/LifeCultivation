@@ -59,7 +59,7 @@ struct SettingsSheet: View {
                         Label("导出数据", systemImage: "square.and.arrow.up")
                     }
                 } footer: {
-                    Text("人生修行 v2.0")
+                    Text("轻迹 v2.0")
                 }
             }
             .navigationTitle("设置")

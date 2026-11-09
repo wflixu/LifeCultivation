@@ -14,6 +14,8 @@ final class FoodEntry {
     var source: FoodSource = FoodSource.text
     var timestamp: Date = Date()
     var imageData: String?
+    /// Denormalized date for direct querying, set to the DailyRecord's date
+    var recordDate: Date = Date.distantPast
 
     @Relationship(inverse: \DailyRecord.foods) var dailyRecord: DailyRecord?
 
@@ -25,7 +27,8 @@ final class FoodEntry {
         source: FoodSource = .text,
         protein: Double? = nil,
         fat: Double? = nil,
-        carbs: Double? = nil
+        carbs: Double? = nil,
+        recordDate: Date = Date.distantPast
     ) {
         self.name = name
         self.calories = calories
@@ -35,6 +38,7 @@ final class FoodEntry {
         self.protein = protein
         self.fat = fat
         self.carbs = carbs
+        self.recordDate = recordDate
         self.timestamp = Date()
     }
 }

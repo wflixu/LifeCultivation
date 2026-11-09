@@ -9,6 +9,8 @@ struct GoalsCard: View {
                 .font(.headline)
 
             if let profile = vm.userProfile {
+                genderPicker(profile)
+                Divider()
                 activityLevelPicker(profile)
                 Divider()
                 heightAgeRow(profile)
@@ -37,7 +39,8 @@ struct GoalsCard: View {
             }
         }
         .padding(20)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
     }
 
     private func activityLevelPicker(_ profile: UserProfile) -> some View {
@@ -48,6 +51,17 @@ struct GoalsCard: View {
             ForEach(ActivityLevel.allCases, id: \.self) { level in
                 Text("\(level.rawValue) (\(String(format: "%.2f", level.coefficient)))")
                     .tag(level)
+            }
+        }
+    }
+
+    private func genderPicker(_ profile: UserProfile) -> some View {
+        Picker("性别", selection: Binding(
+            get: { profile.gender },
+            set: { profile.gender = $0; vm.saveProfile() }
+        )) {
+            ForEach(Gender.allCases, id: \.self) { gender in
+                Text(gender.rawValue).tag(gender)
             }
         }
     }
@@ -86,7 +100,7 @@ struct GoalsCard: View {
             Spacer()
             Text(String(format: format, value.wrappedValue))
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(.orange)
+                .foregroundStyle(AppColors.primary)
             Stepper("", value: value, in: range, step: step)
                 .labelsHidden()
         }

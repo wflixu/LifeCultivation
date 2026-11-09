@@ -1,9 +1,13 @@
 import Foundation
 
 enum CalorieCalculator {
-    /// Mifflin-St Jeor formula — male.
-    static func bmr(weightKg: Double, heightCm: Double, age: Int) -> Double {
-        10 * weightKg + 6.25 * heightCm - 5 * Double(age) + 5
+    /// Mifflin-St Jeor formula.
+    static func bmr(weightKg: Double, heightCm: Double, age: Int, gender: Gender = .male) -> Double {
+        let base = 10 * weightKg + 6.25 * heightCm - 5 * Double(age)
+        switch gender {
+        case .male: return base + 5
+        case .female: return base - 161
+        }
     }
 
     /// Estimated active energy when no Apple Watch data is available.

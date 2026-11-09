@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DiaryPageView: View {
     let record: DailyRecord?
+    let profile: UserProfile?
     let nutritionCardsVM: NutritionCardsViewModel
     let waterCardVM: WaterCardViewModel
     let exerciseCardVM: ExerciseCardViewModel
@@ -21,12 +22,11 @@ struct DiaryPageView: View {
     private func pageContent(_ record: DailyRecord) -> some View {
         ScrollView(.vertical) {
             VStack(spacing: 16) {
-                CalorieRingCard(record: record, showNutritionDetail: showNutritionDetail)
+                CalorieRingCard(record: record, profile: profile, showNutritionDetail: showNutritionDetail)
                 NutritionCards(
-                    record: record,
+                    date: date,
                     vm: nutritionCardsVM,
-                    addFoodVM: addFoodVM,
-                    date: date
+                    addFoodVM: addFoodVM
                 )
                 ExerciseCard(
                     record: record,
@@ -43,9 +43,15 @@ struct DiaryPageView: View {
         .scrollIndicators(.hidden)
         .containerRelativeFrame(.horizontal)
         .onAppear {
-            nutritionCardsVM.loadFoods(for: record)
-            waterCardVM.load(from: record, profile: nil)
-            exerciseCardVM.load(from: record, profile: nil)
+            print("[DiaryPageView] onAppear date=\(date)")
+            waterCardVM.load(from: record, profile: profile)
+            exerciseCardVM.load(from: record, profile: profile)
+        }
+        .onChange(of: nutritionCardsVM.showAddFood) { _, show in
+            print("[DiaryPageView] showAddFood=\(show) date=\(date)")
+            if show {
+                addFoodVM.targetDate = date
+            }
         }
     }
 }

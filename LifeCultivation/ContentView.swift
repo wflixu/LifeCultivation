@@ -49,10 +49,16 @@ struct ContentView: View {
             }
             .tag(2)
         }
-        .tint(.orange)
+        .tint(AppColors.primary)
+        .onAppear {
+            // Style tab bar appearance
+            let appearance = UITabBarAppearance()
+            appearance.configureWithDefaultBackground()
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
         .onChange(of: nutritionCardsVM.showAddFood) { _, show in
             if show {
-                addFoodVM.targetMealType = nutritionCardsVM.selectedMealType
                 addFoodVM.targetDate = diaryVM.currentDate
             }
         }

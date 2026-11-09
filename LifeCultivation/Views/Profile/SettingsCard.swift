@@ -37,6 +37,7 @@ struct SettingsCard: View {
             }
         }
         .padding(20)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
     }
 }

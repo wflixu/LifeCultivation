@@ -1,0 +1,18 @@
+# Dev config (contains API keys)
+dev-config.json
+
+# Images (keep app icon assets tracked)
+*.png
+!LifeCultivation/Assets.xcassets/**/*.png
+
+# Xcode
+*.xcuserdata
+DerivedData/
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods
+Pods/

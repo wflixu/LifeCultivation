@@ -5,33 +5,80 @@ struct WaterCard: View {
     let vm: WaterCardViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header
             HStack {
-                Text("饮水")
+                Label("饮水", systemImage: "drop.fill")
                     .font(.headline)
+                    .foregroundStyle(AppColors.accentBlue)
                 Spacer()
                 Text(waterText)
-                    .font(.subheadline)
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
             }
 
-            HStack(spacing: 12) {
+            // Bar-based water tracker
+            HStack(spacing: 6) {
                 ForEach(0..<vm.targetCups, id: \.self) { i in
-                    Image(systemName: i < vm.currentCups ? "drop.fill" : "drop")
-                        .font(.title2)
-                        .foregroundStyle(i < vm.currentCups ? .blue : Color(.systemGray4))
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(
+                            i < vm.currentCups
+                                ? LinearGradient(
+                                    gradient: Gradient(colors: [AppColors.accentBlue, AppColors.accentBlue.opacity(0.7)]),
+                                    startPoint: .bottom,
+                                    endPoint: .top
+                                )
+                                : LinearGradient(
+                                    gradient: Gradient(colors: [Color(.systemGray5), Color(.systemGray6)]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                        )
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                        .animation(.spring(response: 0.3), value: vm.currentCups)
                         .onTapGesture {
-                            if i < vm.currentCups {
-                                vm.toggleCup(increment: false, record: record)
-                            } else {
-                                vm.toggleCup(increment: true, record: record)
-                            }
+                            Haptic.light()
+                            // Set cups to N (clicking N-th bar sets cups to N+1)
+                            vm.setCups(i + 1, record: record)
                         }
                 }
             }
+
+            // Quick actions
+            HStack {
+                Button {
+                    Haptic.light()
+                    vm.adjustCups(by: -1, record: record)
+                } label: {
+                    Image(systemName: "minus.circle")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+                .disabled(vm.currentCups <= 0)
+
+                Spacer()
+
+                Text("每杯 250ml")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button {
+                    Haptic.light()
+                    vm.adjustCups(by: 1, record: record)
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .font(.title3)
+                        .foregroundStyle(AppColors.accentBlue)
+                }
+                .disabled(vm.currentCups >= vm.targetCups)
+            }
         }
         .padding(20)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
     }
 
     private var waterText: String {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 110;
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
@@ -50,24 +50,18 @@
 /* Begin PBXFrameworksBuildPhase section */
 		5C2CB88D2ED3555E004AA0BB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB89C2ED35561004AA0BB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB8A62ED35561004AA0BB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -105,14 +99,10 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			fileSystemSynchronizedGroups = (
 				5C2CB8922ED3555E004AA0BB /* LifeCultivation */,
 			);
 			name = LifeCultivation;
-			packageProductDependencies = (
-			);
 			productName = LifeCultivation;
 			productReference = 5C2CB8902ED3555E004AA0BB /* LifeCultivation.app */;
 			productType = "com.apple.product-type.application";
@@ -134,8 +124,6 @@
 				5C2CB8A22ED35561004AA0BB /* LifeCultivationTests */,
 			);
 			name = LifeCultivationTests;
-			packageProductDependencies = (
-			);
 			productName = LifeCultivationTests;
 			productReference = 5C2CB89F2ED35561004AA0BB /* LifeCultivationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,8 +145,6 @@
 				5C2CB8AC2ED35561004AA0BB /* LifeCultivationUITests */,
 			);
 			name = LifeCultivationUITests;
-			packageProductDependencies = (
-			);
 			productName = LifeCultivationUITests;
 			productReference = 5C2CB8A92ED35561004AA0BB /* LifeCultivationUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -195,7 +181,7 @@
 			);
 			mainGroup = 5C2CB8872ED3555E004AA0BB;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
+			preferredProjectObjectVersion = 110;
 			productRefGroup = 5C2CB8912ED3555E004AA0BB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -210,48 +196,36 @@
 /* Begin PBXResourcesBuildPhase section */
 		5C2CB88E2ED3555E004AA0BB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB89D2ED35561004AA0BB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB8A72ED35561004AA0BB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5C2CB88C2ED3555E004AA0BB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB89B2ED35561004AA0BB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5C2CB8A52ED35561004AA0BB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -269,7 +243,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		5C2CB8B12ED35562004AA0BB /* Debug */ = {
+		5C2CB8B12ED35562004AA0BB /* Debug configuration for PBXProject "LifeCultivation" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -334,7 +308,7 @@
 			};
 			name = Debug;
 		};
-		5C2CB8B22ED35562004AA0BB /* Release */ = {
+		5C2CB8B22ED35562004AA0BB /* Release configuration for PBXProject "LifeCultivation" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -392,22 +366,22 @@
 			};
 			name = Release;
 		};
-		5C2CB8B42ED35562004AA0BB /* Debug */ = {
+		5C2CB8B42ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivation" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "人生修行";
+				INFOPLIST_KEY_CFBundleDisplayName = "轻迹";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "人生修行需要访问健康数据以获取步数、能量消耗和体重等信息";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "人生修行需要写入体重数据到健康应用";
-				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "人生修行需要访问临床健康记录以提供更全面的健康分析";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "轻迹需要访问临床健康记录以提供更全面的健康分析";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "轻迹需要访问健康数据以获取步数、能量消耗和体重等信息";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "轻迹需要写入体重数据到健康应用";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -421,6 +395,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = cn.wflixu.LifeCultivation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -430,22 +408,22 @@
 			};
 			name = Debug;
 		};
-		5C2CB8B52ED35562004AA0BB /* Release */ = {
+		5C2CB8B52ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivation" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "人生修行";
+				INFOPLIST_KEY_CFBundleDisplayName = "轻迹";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "人生修行需要访问健康数据以获取步数、能量消耗和体重等信息";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "人生修行需要写入体重数据到健康应用";
-				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "人生修行需要访问临床健康记录以提供更全面的健康分析";
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "轻迹需要访问临床健康记录以提供更全面的健康分析";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "轻迹需要访问健康数据以获取步数、能量消耗和体重等信息";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "轻迹需要写入体重数据到健康应用";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -459,6 +437,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = cn.wflixu.LifeCultivation;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -468,12 +450,12 @@
 			};
 			name = Release;
 		};
-		5C2CB8B72ED35562004AA0BB /* Debug */ = {
+		5C2CB8B72ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivationTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -491,12 +473,12 @@
 			};
 			name = Debug;
 		};
-		5C2CB8B82ED35562004AA0BB /* Release */ = {
+		5C2CB8B82ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivationTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -514,11 +496,11 @@
 			};
 			name = Release;
 		};
-		5C2CB8BA2ED35562004AA0BB /* Debug */ = {
+		5C2CB8BA2ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivationUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -535,11 +517,11 @@
 			};
 			name = Debug;
 		};
-		5C2CB8BB2ED35562004AA0BB /* Release */ = {
+		5C2CB8BB2ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivationUITests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = LifeCultivation/LifeCultivation.entitlements;
-					CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4L3563XCBN;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -562,37 +544,33 @@
 		5C2CB88B2ED3555E004AA0BB /* Build configuration list for PBXProject "LifeCultivation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5C2CB8B12ED35562004AA0BB /* Debug */,
-				5C2CB8B22ED35562004AA0BB /* Release */,
+				5C2CB8B12ED35562004AA0BB /* Debug configuration for PBXProject "LifeCultivation" */,
+				5C2CB8B22ED35562004AA0BB /* Release configuration for PBXProject "LifeCultivation" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		5C2CB8B32ED35562004AA0BB /* Build configuration list for PBXNativeTarget "LifeCultivation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5C2CB8B42ED35562004AA0BB /* Debug */,
-				5C2CB8B52ED35562004AA0BB /* Release */,
+				5C2CB8B42ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivation" */,
+				5C2CB8B52ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivation" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		5C2CB8B62ED35562004AA0BB /* Build configuration list for PBXNativeTarget "LifeCultivationTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5C2CB8B72ED35562004AA0BB /* Debug */,
-				5C2CB8B82ED35562004AA0BB /* Release */,
+				5C2CB8B72ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivationTests" */,
+				5C2CB8B82ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivationTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		5C2CB8B92ED35562004AA0BB /* Build configuration list for PBXNativeTarget "LifeCultivationUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				5C2CB8BA2ED35562004AA0BB /* Debug */,
-				5C2CB8BB2ED35562004AA0BB /* Release */,
+				5C2CB8BA2ED35562004AA0BB /* Debug configuration for PBXNativeTarget "LifeCultivationUITests" */,
+				5C2CB8BB2ED35562004AA0BB /* Release configuration for PBXNativeTarget "LifeCultivationUITests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

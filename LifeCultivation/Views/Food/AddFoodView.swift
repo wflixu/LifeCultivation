@@ -11,15 +11,17 @@ struct AddFoodView: View {
                 modePicker
                 Divider()
                 contentArea
-                if !vm.cart.isEmpty {
-                    cartBar
-                }
             }
             .navigationTitle("添加食物")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if !vm.cart.isEmpty {
+                    cartBar
                 }
             }
             .onAppear { vm.searchFavorites() }
@@ -29,16 +31,42 @@ struct AddFoodView: View {
     // MARK: - Mode Picker
 
     private var modePicker: some View {
-        Picker("模式", selection: $vm.selectedMode) {
-            Text("搜索").tag(0)
-            Text("输入").tag(1)
-            Text("相机").tag(2)
+        HStack(spacing: 8) {
+            modePill("搜索", icon: "magnifyingglass", tag: 0)
+            modePill("输入", icon: "text.bubble", tag: 1)
+            modePill("相机", icon: "camera.fill", tag: 2)
         }
-        .pickerStyle(.segmented)
-        .padding(12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
-    // MARK: - Content
+    private func modePill(_ title: String, icon: String, tag: Int) -> some View {
+        Button {
+            Haptic.light()
+            withAnimation(.spring(response: 0.3)) {
+                vm.selectedMode = tag
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(
+                vm.selectedMode == tag
+                    ? AppColors.primary
+                    : Color(.systemGray6),
+                in: RoundedRectangle(cornerRadius: AppRadius.button)
+            )
+            .foregroundStyle(vm.selectedMode == tag ? .white : .primary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Content Area
 
     @ViewBuilder
     private var contentArea: some View {
@@ -83,10 +111,14 @@ struct AddFoodView: View {
                     )
                 } else {
                     List(foods) { food in
-                        Button { vm.addFavoriteToCart(food) } label: {
+                        Button {
+                            Haptic.light()
+                            vm.addFavoriteToCart(food)
+                        } label: {
                             foodRow(food.name, food.serving, food.calories)
                         }
                     }
+                    .listStyle(.plain)
                 }
             } else {
                 ContentUnavailableView(
@@ -102,6 +134,7 @@ struct AddFoodView: View {
 
     private var inputTab: some View {
         VStack(spacing: 12) {
+            // Text input area
             ZStack(alignment: .topLeading) {
                 if vm.inputText.isEmpty {
                     Text("描述你今天吃的食物...\n例如：一碗米饭、一份宫保鸡丁")
@@ -110,32 +143,43 @@ struct AddFoodView: View {
                         .padding(12)
                 }
                 TextEditor(text: $vm.inputText)
-                    .frame(minHeight: 120)
+                    .frame(minHeight: 100)
                     .padding(8)
                     .scrollContentBackground(.hidden)
                     .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
             }
-            .frame(minHeight: 120)
+            .frame(minHeight: 100)
 
+            // AI button
             Button {
+                Haptic.medium()
                 vm.recognizeFood()
             } label: {
                 HStack {
                     if isLoading {
                         ProgressView().tint(.white)
                     }
+                    Image(systemName: "sparkles")
                     Text(isLoading ? "识别中..." : "AI 识别")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.orange, in: RoundedRectangle(cornerRadius: 10))
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [AppColors.primary, AppColors.primary.opacity(0.8)]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    in: RoundedRectangle(cornerRadius: AppRadius.button)
+                )
                 .foregroundStyle(.white)
             }
             .disabled(isRecognitionDisabled)
+            .opacity(isRecognitionDisabled ? 0.5 : 1)
 
+            // Scrollable results area
             resultsArea
-            Spacer()
         }
         .padding(12)
     }
@@ -149,39 +193,19 @@ struct AddFoodView: View {
         vm.inputText.trimmingCharacters(in: .whitespaces).isEmpty || isLoading
     }
 
+    // MARK: - Results
+
     @ViewBuilder
     private var resultsArea: some View {
         if case .aiResults(let foods) = vm.viewState {
-            List {
-                Section("识别结果") {
+            ScrollView {
+                VStack(spacing: 8) {
                     ForEach(Array(foods.enumerated()), id: \.offset) { idx, food in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(food.name)
-                                    .font(.subheadline.weight(.medium))
-                                Text(food.serving)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Text("\(Int(food.calories)) kcal")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Button { vm.addToCart(from: food) } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.orange)
-                            }
-                            .buttonStyle(.plain)
-                            Button { vm.favoriteFood(at: idx) } label: {
-                                Image(systemName: vm.favoriteIndices.contains(idx) ? "heart.fill" : "heart")
-                                    .foregroundStyle(.pink)
-                            }
-                            .buttonStyle(.plain)
-                        }
+                        resultRow(food, at: idx)
                     }
                 }
             }
-            .listStyle(.insetGrouped)
+            .frame(maxHeight: 240)
         } else if case .aiError(let msg) = vm.viewState {
             HStack {
                 Label(msg, systemImage: "exclamationmark.triangle")
@@ -193,8 +217,55 @@ struct AddFoodView: View {
             }
             .padding(12)
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
-            .padding(.horizontal, 12)
         }
+    }
+
+    private func resultRow(_ food: RecognizedFood, at idx: Int) -> some View {
+        HStack(spacing: 8) {
+            // Food info
+            VStack(alignment: .leading, spacing: 2) {
+                Text(food.name)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                Text(food.serving)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            .layoutPriority(1)
+
+            Spacer(minLength: 4)
+
+            // Calories
+            Text("\(Int(food.calories)) kcal")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .layoutPriority(1)
+
+            // Add to cart
+            Button {
+                Haptic.light()
+                vm.addToCart(from: food)
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(AppColors.primary)
+            }
+            .buttonStyle(.plain)
+
+            // Favorite
+            Button {
+                Haptic.success()
+                vm.favoriteFood(at: idx)
+            } label: {
+                Image(systemName: vm.favoriteIndices.contains(idx) ? "heart.fill" : "heart")
+                    .font(.body)
+                    .foregroundStyle(vm.favoriteIndices.contains(idx) ? .pink : .secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(10)
+        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: AppRadius.small))
     }
 
     // MARK: - Camera Tab
@@ -207,12 +278,11 @@ struct AddFoodView: View {
         )
     }
 
-    // MARK: - Cart Bar
+    // MARK: - Cart Bar (using safeAreaInset now)
 
     private var cartBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            ScrollView(.horizontal) {
+        HStack {
+            ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(vm.cart) { item in
                         HStack(spacing: 4) {
@@ -224,7 +294,10 @@ struct AddFoodView: View {
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
-                            Button { vm.removeFromCart(item) } label: {
+                            Button {
+                                Haptic.light()
+                                vm.removeFromCart(item)
+                            } label: {
                                 Image(systemName: "xmark")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
@@ -232,33 +305,44 @@ struct AddFoodView: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 8))
+                        .background(Color(.systemGray5), in: RoundedRectangle(cornerRadius: AppRadius.chip))
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
             }
+            .layoutPriority(1)
 
-            HStack {
-                Text("共 \(vm.cart.count) 项 · \(Int(vm.totalCalories)) kcal")
-                    .font(.subheadline.weight(.medium))
-                Spacer()
-                Button {
-                    vm.commit()
-                    dismiss()
-                } label: {
-                    Text("完成")
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 8)
-                        .background(Color.orange, in: RoundedRectangle(cornerRadius: 8))
-                        .foregroundStyle(.white)
-                }
+            Divider().frame(height: 30)
+
+            VStack(spacing: 0) {
+                Text("\(Int(vm.totalCalories))")
+                    .font(.system(.headline, design: .rounded))
+                    .foregroundStyle(AppColors.primary)
+                Text("kcal")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+            .frame(width: 60)
+
+            Button {
+                Haptic.success()
+                vm.commit()
+                dismiss()
+            } label: {
+                Text("完成")
+                    .fontWeight(.semibold)
+                    .frame(width: 64, height: 48)
+                    .background(AppColors.primary, in: RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(.white)
+            }
+            .padding(.trailing, 8)
         }
+        .frame(height: 56)
         .background(.regularMaterial)
+        .overlay(alignment: .top) {
+            Divider()
+        }
     }
 
     // MARK: - Helpers
@@ -277,8 +361,10 @@ struct AddFoodView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .padding(.trailing, 4)
-            Image(systemName: "plus")
-                .font(.caption.weight(.bold))
+            Image(systemName: "plus.circle.fill")
+                .font(.title3)
+                .foregroundStyle(AppColors.primary)
         }
+        .padding(.vertical, 4)
     }
 }

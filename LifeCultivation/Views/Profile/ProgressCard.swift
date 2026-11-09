@@ -35,8 +35,25 @@ struct ProgressCard: View {
                         }
                     }
 
-                    ProgressView(value: progress)
-                        .tint(lost <= 0 ? .green : .blue)
+                    // Custom gradient progress bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color(.systemGray5))
+                                .frame(height: 10)
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: lost <= 0 ? [.green, .mint] : [AppColors.primary, AppColors.primary.opacity(0.6)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: max(geo.size.width * progress, progress > 0 ? 10 : 0), height: 10)
+                                .animation(.easeInOut(duration: 0.6), value: progress)
+                        }
+                    }
+                    .frame(height: 10)
 
                     HStack {
                         Text(lost <= 0 ? "已达标" : "还需减重 \(String(format: "%.1f", abs(lost))) kg")
@@ -65,6 +82,7 @@ struct ProgressCard: View {
             }
         }
         .padding(20)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: AppRadius.card))
+        .appCardShadow()
     }
 }

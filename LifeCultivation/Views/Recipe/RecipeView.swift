@@ -73,7 +73,7 @@ struct RecipeView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(
-                    isSelected ? Color.orange : Color(.systemGray6),
+                    isSelected ? AppColors.primary : Color(.systemGray6),
                     in: RoundedRectangle(cornerRadius: 16)
                 )
                 .foregroundStyle(isSelected ? .white : .primary)
@@ -114,7 +114,7 @@ struct RecipeView: View {
                                 } label: {
                                     Label("编辑", systemImage: "pencil")
                                 }
-                                .tint(.orange)
+                                .tint(AppColors.primary)
                             }
                     }
                 }

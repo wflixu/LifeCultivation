@@ -12,6 +12,7 @@ final class DiaryViewModel {
     var currentDate: Date = Calendar.current.startOfDay(for: Date())
     var records: [Date: DailyRecord] = [:]
     var viewState: ViewState<DailyRecord> = .idle
+    var userProfile: UserProfile?
 
     // Navigation
     var showDatePicker = false
@@ -120,6 +121,7 @@ final class DiaryViewModel {
     }
 
     private func loadToday() async {
+        userProfile = UserProfile.fetchOrCreate(context: context)
         _ = fetchOrCreateRecord(for: currentDate)
         preloadAdjacentDays(for: currentDate)
         await backfillHealthKitData()

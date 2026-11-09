@@ -11,6 +11,13 @@ final class UserProfile {
     var age: Int?
     var apiKey: String?
     var apiBaseURL: String?
+    var genderRawValue: String = Gender.male.rawValue
+
+    @Transient
+    var gender: Gender {
+        get { Gender(rawValue: genderRawValue) ?? .male }
+        set { genderRawValue = newValue.rawValue }
+    }
 
     init() {}
 

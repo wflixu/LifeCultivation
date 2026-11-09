@@ -86,7 +86,7 @@ struct FoodEditView: View {
                                 HStack {
                                     Text("方案 \(idx + 1)")
                                         .font(.caption.weight(.medium))
-                                        .foregroundStyle(.orange)
+                                        .foregroundStyle(AppColors.primary)
                                     Spacer()
                                     Text("\(Int(suggestion.calories)) kcal")
                                         .font(.caption.weight(.semibold))
