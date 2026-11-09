@@ -80,7 +80,7 @@ final class AddFoodViewModel {
                     imageData: nil
                 )
                 viewState = .aiResults(foods)
-                favoriteIndices = []
+                favoriteIndices = matchingFavoriteIndices(for: foods)
             } catch {
                 viewState = .aiError(error.localizedDescription)
             }
@@ -158,12 +158,34 @@ final class AddFoodViewModel {
         cart.removeAll()
     }
 
-    func favoriteFood(at index: Int) {
+    func toggleFavorite(at index: Int) {
         guard case .aiResults(let foods) = viewState,
               index < foods.count else { return }
         let food = foods[index]
 
-        // Check if already favorited
+        if favoriteIndices.contains(index) {
+            removeFavorite(named: food.name)
+        } else {
+            saveFavorite(food)
+        }
+        // Recompute so duplicate names across results stay in sync.
+        favoriteIndices = matchingFavoriteIndices(for: foods)
+    }
+
+    // MARK: - Favorite Helpers
+
+    private func matchingFavoriteIndices(for foods: [RecognizedFood]) -> Set<Int> {
+        let existingNames = Set(
+            ((try? context.fetch(FetchDescriptor<FavoriteFood>())) ?? []).map(\.name)
+        )
+        return Set(
+            foods.enumerated().compactMap { index, food in
+                existingNames.contains(food.name) ? index : nil
+            }
+        )
+    }
+
+    private func saveFavorite(_ food: RecognizedFood) {
         let name = food.name
         let descriptor = FetchDescriptor<FavoriteFood>(predicate: #Predicate { $0.name == name })
         if let existing = try? context.fetch(descriptor).first {
@@ -180,9 +202,14 @@ final class AddFoodViewModel {
             )
             context.insert(fav)
         }
+        try? context.save()
+    }
 
-        if (try? context.save()) != nil {
-            favoriteIndices.insert(index)
+    private func removeFavorite(named name: String) {
+        let descriptor = FetchDescriptor<FavoriteFood>(predicate: #Predicate { $0.name == name })
+        if let existing = try? context.fetch(descriptor).first {
+            context.delete(existing)
+            try? context.save()
         }
     }
 }

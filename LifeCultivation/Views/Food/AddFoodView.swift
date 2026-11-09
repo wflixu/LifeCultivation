@@ -262,8 +262,8 @@ struct AddFoodView: View {
 
             // Favorite
             Button {
-                Haptic.success()
-                vm.favoriteFood(at: idx)
+                Haptic.light()
+                vm.toggleFavorite(at: idx)
             } label: {
                 Image(systemName: vm.favoriteIndices.contains(idx) ? "heart.fill" : "heart")
                     .font(.body)
